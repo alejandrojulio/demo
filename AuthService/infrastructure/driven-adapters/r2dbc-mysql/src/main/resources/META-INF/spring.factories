@@ -1,3 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-co.com.pragma.r2dbc.config.R2dbcConfig,\
-co.com.pragma.r2dbc.config.MySQLConnectionPool
+co.com.pragma.r2dbc.config.R2dbcConfig

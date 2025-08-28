@@ -1,3 +1,10 @@
 dependencies {
     implementation project(':model')
+    // ✅ AGREGAR: Dependencias Spring necesarias para @Service y @Transactional
+    implementation 'org.springframework:spring-context'
+    implementation 'org.springframework:spring-tx'
+
+    // ✅ AGREGAR: Para soporte reactivo con transacciones
+    implementation 'org.springframework:spring-r2dbc'
+    implementation 'io.projectreactor:reactor-core'
 }
