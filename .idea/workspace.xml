@@ -4,7 +4,27 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9a4e442f-4162-491b-8faa-c287a6032bce" name="Changes" comment="" />
+    <list default="true" id="9a4e442f-4162-491b-8faa-c287a6032bce" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/RequestService/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/RequestService/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RequestService/applications/app-service/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/RequestService/applications/app-service/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RequestService/applications/app-service/src/main/java/co/com/pragma/config/ObjectMapperConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/RequestService/applications/app-service/src/main/java/co/com/pragma/config/ObjectMapperConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RequestService/applications/app-service/src/main/resources/application.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/RequestService/applications/app-service/src/main/resources/application.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RequestService/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/RequestService/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RequestService/deployment/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/RequestService/deployment/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RequestService/domain/model/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/RequestService/domain/model/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RequestService/domain/usecase/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/RequestService/domain/usecase/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RequestService/infrastructure/driven-adapters/r2dbc-postgresql/build.gradle" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RequestService/infrastructure/driven-adapters/r2dbc-postgresql/src/main/java/co/com/pragma/r2dbc/MyReactiveRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RequestService/infrastructure/driven-adapters/r2dbc-postgresql/src/main/java/co/com/pragma/r2dbc/MyReactiveRepositoryAdapter.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RequestService/infrastructure/driven-adapters/r2dbc-postgresql/src/main/java/co/com/pragma/r2dbc/config/PostgreSQLConnectionPool.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RequestService/infrastructure/driven-adapters/r2dbc-postgresql/src/main/java/co/com/pragma/r2dbc/config/PostgresqlConnectionProperties.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RequestService/infrastructure/driven-adapters/r2dbc-postgresql/src/main/java/co/com/pragma/r2dbc/helper/ReactiveAdapterOperations.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RequestService/infrastructure/driven-adapters/r2dbc-postgresql/src/test/java/co/com/pragma/r2dbc/MyReactiveRepositoryAdapterTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RequestService/infrastructure/driven-adapters/r2dbc-postgresql/src/test/java/co/com/pragma/r2dbc/config/PostgreSQLConnectionPoolTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RequestService/infrastructure/driven-adapters/r2dbc-postgresql/src/test/java/co/com/pragma/r2dbc/helper/ReactiveAdapterOperationsTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RequestService/main.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/RequestService/main.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RequestService/settings.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/RequestService/settings.gradle" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -13,9 +33,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 7
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
   <component name="ProjectId" id="31tNuRGk0miR4ZfCq8AHQ82OruI" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -25,7 +45,8 @@
   "keyToString": {
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "AuthService-LoadRequest",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/repos/CrediYa",

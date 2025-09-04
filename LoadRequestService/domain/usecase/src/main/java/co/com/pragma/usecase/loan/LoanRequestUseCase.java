@@ -1,0 +1,144 @@
+package co.com.pragma.usecase.loan;
+
+import co.com.pragma.model.loan.LoanRequest;
+import co.com.pragma.model.loan.LoanRequestDTO;
+import co.com.pragma.model.loan.gateways.LoanApplicationLogger;
+import co.com.pragma.model.loan.gateways.LoanRequestRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Service
+public class LoanRequestUseCase {
+
+    private final LoanRequestRepository loanRequestRepository;
+    private final LoanApplicationLogger logger;
+
+    private static final BigDecimal MIN_LOAN_AMOUNT = new BigDecimal("100000");
+    private static final BigDecimal MAX_LOAN_AMOUNT = new BigDecimal("50000000");
+    private static final Integer MIN_LOAN_TERM = 1;
+    private static final Integer MAX_LOAN_TERM = 120;
+
+    public LoanRequestUseCase(LoanRequestRepository loanRequestRepository, 
+                             LoanApplicationLogger logger) {
+        this.loanRequestRepository = loanRequestRepository;
+        this.logger = logger;
+    }
+
+    @Transactional
+    public Mono<LoanRequest> createLoanRequest(LoanRequestDTO loanRequestDTO) {
+        logger.info(LoanRequestUseCaseConstants.LOG_CREATING_LOAN_REQUEST, loanRequestDTO.getClientDocumentId());
+
+        return Mono.just(loanRequestDTO)
+                .doOnNext(dto -> logger.info(LoanRequestUseCaseConstants.LOG_VALIDATING_LOAN_DATA, dto.getClientDocumentId()))
+                .flatMap(this::validateRequiredFields)
+                .flatMap(this::validateLoanAmount)
+                .flatMap(this::validateLoanTerm)
+                .flatMap(this::validateLoanType)
+                .flatMap(this::checkExistingLoan)
+                .map(this::enrichLoanRequestData)
+                .doOnNext(loanRequest -> logger.info(LoanRequestUseCaseConstants.LOG_SAVING_LOAN_REQUEST, loanRequest.getClientDocumentId()))
+                .flatMap(loanRequestRepository::save)
+                .doOnSuccess(savedLoanRequest -> logger.info(LoanRequestUseCaseConstants.LOG_LOAN_REQUEST_CREATED_SUCCESS, savedLoanRequest.getId()))
+                .doOnError(error -> logger.error(LoanRequestUseCaseConstants.LOG_ERROR_CREATING_LOAN_REQUEST + loanRequestDTO.getClientDocumentId(), error));
+    }
+
+    private Mono<LoanRequestDTO> validateRequiredFields(LoanRequestDTO dto) {
+        if (dto.getClientDocumentId() == null || dto.getClientDocumentId().trim().isEmpty()) {
+            return Mono.error(new IllegalArgumentException(LoanRequestUseCaseConstants.ERROR_CLIENT_DOCUMENT_REQUIRED));
+        }
+
+        if (dto.getAmount() == null) {
+            return Mono.error(new IllegalArgumentException(LoanRequestUseCaseConstants.ERROR_LOAN_AMOUNT_REQUIRED));
+        }
+
+        if (dto.getTermInMonths() == null) {
+            return Mono.error(new IllegalArgumentException(LoanRequestUseCaseConstants.ERROR_LOAN_TERM_REQUIRED));
+        }
+
+        if (dto.getLoanType() == null) {
+            return Mono.error(new IllegalArgumentException(LoanRequestUseCaseConstants.ERROR_LOAN_TYPE_REQUIRED));
+        }
+
+        return Mono.just(dto);
+    }
+
+    private void validateClientExists(LoanRequestDTO dto) { //Mono<LoanRequestDTO>
+        logger.info(LoanRequestUseCaseConstants.LOG_VALIDATING_CLIENT_EXISTS, dto.getClientDocumentId());
+
+
+    }
+
+    private Mono<LoanRequestDTO> validateLoanAmount(LoanRequestDTO dto) {
+        logger.info(LoanRequestUseCaseConstants.LOG_VALIDATING_LOAN_AMOUNT, dto.getAmount(), dto.getClientDocumentId());
+
+        if (dto.getAmount().compareTo(MIN_LOAN_AMOUNT) < 0 || dto.getAmount().compareTo(MAX_LOAN_AMOUNT) > 0) {
+            return Mono.error(new IllegalArgumentException(LoanRequestUseCaseConstants.ERROR_LOAN_AMOUNT_INVALID));
+        }
+
+        logger.info(LoanRequestUseCaseConstants.LOG_LOAN_AMOUNT_VALID, dto.getClientDocumentId());
+        return Mono.just(dto);
+    }
+
+    private Mono<LoanRequestDTO> validateLoanTerm(LoanRequestDTO dto) {
+        logger.info(LoanRequestUseCaseConstants.LOG_VALIDATING_LOAN_TERM, dto.getTermInMonths(), dto.getClientDocumentId());
+
+        if (dto.getTermInMonths() < MIN_LOAN_TERM || dto.getTermInMonths() > MAX_LOAN_TERM) {
+            return Mono.error(new IllegalArgumentException(LoanRequestUseCaseConstants.ERROR_LOAN_TERM_INVALID));
+        }
+
+        logger.info(LoanRequestUseCaseConstants.LOG_LOAN_TERM_VALID, dto.getClientDocumentId());
+        return Mono.just(dto);
+    }
+
+    private Mono<LoanRequestDTO> validateLoanType(LoanRequestDTO dto) {
+        logger.info(LoanRequestUseCaseConstants.LOG_VALIDATING_LOAN_TYPE, dto.getLoanType(), dto.getClientDocumentId());
+
+        try {
+            LoanRequest.LoanType.valueOf(dto.getLoanType().name());
+            logger.info(LoanRequestUseCaseConstants.LOG_LOAN_TYPE_VALID, dto.getClientDocumentId());
+            return Mono.just(dto);
+        } catch (IllegalArgumentException e) {
+            return Mono.error(new IllegalArgumentException(
+                    String.format(LoanRequestUseCaseConstants.ERROR_LOAN_TYPE_INVALID, dto.getLoanType())
+            ));
+        }
+    }
+
+    private Mono<LoanRequestDTO> checkExistingLoan(LoanRequestDTO dto) {
+        logger.info(LoanRequestUseCaseConstants.LOG_CHECKING_EXISTING_LOAN, dto.getClientDocumentId(), dto.getLoanType());
+
+        return loanRequestRepository.existsByClientDocumentAndType(dto.getClientDocumentId(), dto.getLoanType())
+                .flatMap(exists -> {
+                    if (exists) {
+                        logger.warn(LoanRequestUseCaseConstants.LOG_EXISTING_LOAN_FOUND, dto.getClientDocumentId(), dto.getLoanType());
+                        return Mono.error(new IllegalArgumentException(
+                                String.format(LoanRequestUseCaseConstants.ERROR_EXISTING_LOAN, dto.getLoanType().getDisplayName())
+                        ));
+                    } else {
+                        logger.info(LoanRequestUseCaseConstants.LOG_NO_EXISTING_LOAN, dto.getClientDocumentId(), dto.getLoanType());
+                        return Mono.just(dto);
+                    }
+                });
+    }
+
+    private LoanRequest enrichLoanRequestData(LoanRequestDTO dto) {
+        logger.info(LoanRequestUseCaseConstants.LOG_ENRICHING_LOAN_DATA, dto.getClientDocumentId());
+
+        LocalDateTime now = LocalDateTime.now();
+        
+        return LoanRequest.builder()
+                .clientDocumentId(dto.getClientDocumentId().trim())
+                .amount(dto.getAmount())
+                .termInMonths(dto.getTermInMonths())
+                .loanType(dto.getLoanType())
+                .status(LoanRequest.LoanStatus.PENDING_REVIEW)
+                .createdAt(now)
+                .updatedAt(now)
+                .notes(dto.getNotes() != null ? dto.getNotes().trim() : null)
+                .build();
+    }
+}
