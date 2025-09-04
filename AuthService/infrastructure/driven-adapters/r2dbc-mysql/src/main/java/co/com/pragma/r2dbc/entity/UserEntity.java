@@ -17,6 +17,8 @@ public class UserEntity {
     @Id
     private String id;
 
+    private String document;
+
     @Column("first_name")
     private String firstName;
 

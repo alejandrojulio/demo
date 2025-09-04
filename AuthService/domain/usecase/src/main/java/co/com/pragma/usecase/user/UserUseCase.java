@@ -2,7 +2,11 @@ package co.com.pragma.usecase.user;
 
 import co.com.pragma.model.user.gateways.ApplicationLogger;
 import co.com.pragma.model.user.User;
+import co.com.pragma.model.user.UserDTO;
+import co.com.pragma.model.user.UserResponseDTO;
+import co.com.pragma.model.user.UserMapper;
 import co.com.pragma.model.user.gateways.UserRepository;
+import co.com.pragma.usecase.user.UserUseCaseConstants;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
@@ -28,115 +32,107 @@ public class UserUseCase {
         this.logger = logger;
     }
 
-    public Mono<User> getuser(String id) {
+    public Mono<UserResponseDTO> getuser(String id) {
         return userRepository.findById(id)
-                .doOnSubscribe(s -> logger.info("Buscando usuario con ID: {}", id))
+                .doOnSubscribe(s -> logger.info(UserUseCaseConstants.LOG_SEARCHING_USER, id))
                 .doOnSuccess(user -> {
                     if (user != null) {
-                        logger.info("Usuario encontrado con ID: {}", id);
+                        logger.info(UserUseCaseConstants.LOG_USER_FOUND, id);
                     } else {
-                        logger.info("Usuario no encontrado con ID: {}", id);
+                        logger.info(UserUseCaseConstants.LOG_USER_NOT_FOUND, id);
                     }
                 })
-                .doOnError(error -> logger.error("Error al buscar usuario con ID: " + id, error));
+                .map(UserMapper::toResponseDTO)
+                .doOnError(error -> logger.error(UserUseCaseConstants.LOG_ERROR_SEARCHING_USER + id, error));
     }
 
-    // ✅ AHORA DEBERÍA FUNCIONAR: @Transactional con configuración estándar
     @Transactional
-    public Mono<User> createUser(User userToCreate) {
-        logger.info("Iniciando proceso de creación de usuario para email: {}", userToCreate.getEmail());
+    public Mono<UserResponseDTO> createUser(UserDTO userDTO) {
+        logger.info(UserUseCaseConstants.LOG_CREATING_USER, userDTO.getEmail());
 
-        return Mono.just(userToCreate)
-                .doOnNext(user -> logger.info("Validando datos del usuario: {}", user.getEmail()))
+        return Mono.just(userDTO)
+                .map(UserMapper::fromDTO)
+                .doOnNext(user -> logger.info(UserUseCaseConstants.LOG_VALIDATING_USER_DATA, user.getEmail()))
                 .flatMap(this::validateRequiredFields)
                 .flatMap(this::validateEmailFormat)
                 .flatMap(this::validateSalaryRange)
                 .flatMap(this::ensureEmailIsUnique)
-                .map(this::enrichUserData)
+                .map(UserMapper::enrichUserData)
                 .flatMap(userRepository::save) // ← Operación transaccional
-                .doOnSuccess(savedUser -> logger.info("Usuario creado exitosamente con ID: {}", savedUser.getId()))
-                .doOnError(error -> logger.error("Error en la creación de usuario para email: " + userToCreate.getEmail(), error));
+                .map(UserMapper::toResponseDTO)
+                .doOnSuccess(savedUser -> logger.info(UserUseCaseConstants.LOG_USER_CREATED_SUCCESS, savedUser.getId()))
+                .doOnError(error -> logger.error(UserUseCaseConstants.LOG_ERROR_CREATING_USER + userDTO.getEmail(), error));
     }
 
     private Mono<User> validateRequiredFields(User user) {
-        logger.info("Validando campos obligatorios para usuario: {}", user.getEmail());
+        logger.info(UserUseCaseConstants.LOG_VALIDATING_REQUIRED_FIELDS, user.getEmail());
 
         if (user.getFirstName() == null || user.getFirstName().trim().isEmpty()) {
-            return Mono.error(new IllegalArgumentException("El nombre es obligatorio"));
+            return Mono.error(new IllegalArgumentException(UserUseCaseConstants.ERROR_FIRST_NAME_REQUIRED));
         }
 
         if (user.getLastName() == null || user.getLastName().trim().isEmpty()) {
-            return Mono.error(new IllegalArgumentException("El apellido es obligatorio"));
+            return Mono.error(new IllegalArgumentException(UserUseCaseConstants.ERROR_LAST_NAME_REQUIRED));
         }
 
         if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
-            return Mono.error(new IllegalArgumentException("El correo electrónico es obligatorio"));
+            return Mono.error(new IllegalArgumentException(UserUseCaseConstants.ERROR_EMAIL_REQUIRED));
         }
 
         if (user.getBaseSalary() == null) {
-            return Mono.error(new IllegalArgumentException("El salario base es obligatorio"));
+            return Mono.error(new IllegalArgumentException(UserUseCaseConstants.ERROR_BASE_SALARY_REQUIRED));
         }
 
-        logger.info("Campos obligatorios validados correctamente para: {}", user.getEmail());
+        logger.info(UserUseCaseConstants.LOG_REQUIRED_FIELDS_VALIDATED, user.getEmail());
         return Mono.just(user);
     }
 
     private Mono<User> validateEmailFormat(User user) {
-        logger.info("Validando formato de email para: {}", user.getEmail());
+        logger.info(UserUseCaseConstants.LOG_VALIDATING_EMAIL_FORMAT, user.getEmail());
 
         if (!EMAIL_PATTERN.matcher(user.getEmail().trim()).matches()) {
-            return Mono.error(new IllegalArgumentException("El formato del correo electrónico no es válido"));
+            return Mono.error(new IllegalArgumentException(UserUseCaseConstants.ERROR_INVALID_EMAIL_FORMAT));
         }
 
-        logger.info("Formato de email válido para: {}", user.getEmail());
+        logger.info(UserUseCaseConstants.LOG_EMAIL_FORMAT_VALID, user.getEmail());
         return Mono.just(user);
     }
 
     private Mono<User> validateSalaryRange(User user) {
-        logger.info("Validando rango de salario para usuario: {} - Salario: {}", user.getEmail(), user.getBaseSalary());
+        logger.info(UserUseCaseConstants.LOG_VALIDATING_SALARY_RANGE, user.getEmail(), user.getBaseSalary());
 
         BigDecimal salary = user.getBaseSalary();
 
         if (salary.compareTo(MIN_SALARY) < 0) {
-            return Mono.error(new IllegalArgumentException("El salario base no puede ser menor a 0"));
+            return Mono.error(new IllegalArgumentException(UserUseCaseConstants.ERROR_SALARY_BELOW_MIN));
         }
 
         if (salary.compareTo(MAX_SALARY) > 0) {
-            return Mono.error(new IllegalArgumentException("El salario base no puede ser mayor a 15,000,000"));
+            return Mono.error(new IllegalArgumentException(UserUseCaseConstants.ERROR_SALARY_ABOVE_MAX));
         }
 
-        logger.info("Rango de salario válido para usuario: {}", user.getEmail());
+        logger.info(UserUseCaseConstants.LOG_SALARY_RANGE_VALID, user.getEmail());
         return Mono.just(user);
     }
 
     private Mono<User> ensureEmailIsUnique(User user) {
-        logger.info("Verificando unicidad de email: {}", user.getEmail());
+        logger.info(UserUseCaseConstants.LOG_CHECKING_EMAIL_UNIQUENESS, user.getEmail());
 
         return userRepository.existsByEmail(user.getEmail().toLowerCase().trim())
                 .flatMap(emailExists -> {
                     if (emailExists) {
-                        logger.warn("Intento de registro con email ya existente: {}", user.getEmail());
-                        return Mono.error(new IllegalArgumentException("El correo electrónico ya está registrado: " + user.getEmail()));
+                        logger.warn(UserUseCaseConstants.LOG_EMAIL_ALREADY_EXISTS, user.getEmail());
+                        return Mono.error(new IllegalArgumentException(UserUseCaseConstants.ERROR_EMAIL_ALREADY_REGISTERED + user.getEmail()));
                     }
-                    logger.info("Email único confirmado para: {}", user.getEmail());
+                    logger.info(UserUseCaseConstants.LOG_EMAIL_UNIQUE_CONFIRMED, user.getEmail());
                     return Mono.just(user);
                 })
                 .doOnError(error -> {
                     if (!(error instanceof IllegalArgumentException)) {
-                        logger.error("Error al verificar unicidad del email: " + user.getEmail(), error);
+                        logger.error(UserUseCaseConstants.LOG_ERROR_CHECKING_EMAIL_UNIQUENESS + user.getEmail(), error);
                     }
                 });
     }
 
-    private User enrichUserData(User user) {
-        logger.info("Enriqueciendo datos del usuario: {}", user.getEmail());
-
-        return user.toBuilder()
-                .email(user.getEmail().toLowerCase().trim())
-                .firstName(user.getFirstName().trim())
-                .lastName(user.getLastName().trim())
-                .address(user.getAddress() != null ? user.getAddress().trim() : null)
-                .phone(user.getPhone() != null ? user.getPhone().trim() : null)
-                .build();
-    }
+    // El método enrichUserData ahora está en UserMapper
 }

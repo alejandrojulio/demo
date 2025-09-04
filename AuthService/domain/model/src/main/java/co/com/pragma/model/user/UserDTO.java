@@ -1,4 +1,5 @@
 package co.com.pragma.model.user;
+
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -9,9 +10,9 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder(toBuilder = true)
-public class User {
-    private String id;
+@Builder
+public class UserDTO {
+    
     private String document;
     private String firstName;
     private String lastName;
@@ -20,12 +21,4 @@ public class User {
     private String phone;
     private String email;
     private BigDecimal baseSalary;
-
-    public boolean isAdult() {
-        return birthDate != null && LocalDate.now().minusYears(18).isAfter(birthDate);
-    }
-
-    public String getFullName() {
-        return firstName + " " + lastName;
-    }
 }

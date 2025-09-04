@@ -12,8 +12,9 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 @Configuration
 public class RouterRest {
     @Bean
-    public RouterFunction<ServerResponse> routerFunction(Handler handler) {
+    public RouterFunction<ServerResponse> routerFunction(Handler handler, LoanRequestHandler loanRequestHandler) {
         return route(GET("/api/v1/users/{id}"), handler::listenGETUseCase)
-                .andRoute(POST("/api/v1/users"), handler::listenPOSTUseCase);
+                .andRoute(POST("/api/v1/users"), handler::listenPOSTUseCase)
+                .andRoute(POST("/api/v1/solicitud"), loanRequestHandler::createLoanRequest);
     }
 }
