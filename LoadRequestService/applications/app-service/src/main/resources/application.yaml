@@ -31,7 +31,6 @@ logging:
     co.com.pragma.api: "DEBUG"
     org.springframework.security: "DEBUG"
     org.springframework.web.reactive.function.client: "DEBUG"
-# AWS Configuration
 aws:
   region: ${AWS_REGION:us-east-2}
   access-key-id: ${AWS_ACCESS_KEY_ID:your-access-key-here}
@@ -39,7 +38,6 @@ aws:
   sqs:
     loan-decisions-queue-url: ${AWS_SQS_QUEUE_URL:https://sqs.us-east-2.amazonaws.com/882309621524/sqs_notificaciones}
     
-# Local development with LocalStack  
 local:
   aws:
     endpoint: "http://localhost:4566"

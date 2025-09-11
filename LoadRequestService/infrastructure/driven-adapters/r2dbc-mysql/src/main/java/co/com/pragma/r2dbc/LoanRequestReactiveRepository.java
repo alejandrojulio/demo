@@ -16,6 +16,8 @@ public interface LoanRequestReactiveRepository extends ReactiveCrudRepository<Lo
     
     Mono<Boolean> existsByClientDocumentIdAndLoanType(String clientDocumentId, String loanType);
     
+    Mono<Boolean> existsByClientDocumentIdAndLoanTypeAndStatus(String clientDocumentId, String loanType, String status);
+    
     /**
      * Consulta funcional usando Query Methods
      * Spring Data R2DBC maneja automáticamente el IN con múltiples parámetros

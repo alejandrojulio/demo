@@ -22,5 +22,5 @@ public class UserDTO {
     private String email;
     private BigDecimal baseSalary;
     private String password;
-    private UserRole role; // Opcional, por defecto será CLIENTE
+    private UserRole role; 
 }

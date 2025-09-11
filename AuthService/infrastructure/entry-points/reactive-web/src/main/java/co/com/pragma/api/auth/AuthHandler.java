@@ -20,9 +20,6 @@ public class AuthHandler {
 
     private final AuthenticationUseCase authenticationUseCase;
 
-    /**
-     * Maneja el endpoint de login
-     */
     public Mono<ServerResponse> login(ServerRequest request) {
         return request.bodyToMono(LoginRequestDTO.class)
                 .flatMap(authenticationUseCase::login)
@@ -30,9 +27,6 @@ public class AuthHandler {
                 .onErrorResume(this::handleLoginError);
     }
 
-    /**
-     * Maneja el endpoint de validación de token
-     */
     public Mono<ServerResponse> validateToken(ServerRequest request) {
         return request.bodyToMono(TokenValidationRequestDTO.class)
                 .map(TokenValidationRequestDTO::getToken)
