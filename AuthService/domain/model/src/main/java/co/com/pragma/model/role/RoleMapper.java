@@ -2,17 +2,12 @@ package co.com.pragma.model.role;
 
 import co.com.pragma.model.user.UserRole;
 
-/**
- * Mapper para conversiones entre Role y UserRole
- */
+
 public class RoleMapper {
     
-    /**
-     * Convierte un ID de rol a UserRole enum
-     */
     public static UserRole roleIdToUserRole(Integer roleId) {
         if (roleId == null) {
-            return UserRole.CLIENTE; // Default
+            return UserRole.CLIENTE;
         }
         
         return switch (roleId) {
@@ -23,9 +18,6 @@ public class RoleMapper {
         };
     }
     
-    /**
-     * Convierte un UserRole enum a ID de rol
-     */
     public static Integer userRoleToRoleId(UserRole userRole) {
         if (userRole == null) {
             return 3; // Default: CLIENTE
@@ -37,10 +29,7 @@ public class RoleMapper {
             case CLIENTE -> 3;
         };
     }
-    
-    /**
-     * Convierte nombre de rol a UserRole enum
-     */
+
     public static UserRole roleNameToUserRole(String roleName) {
         if (roleName == null) {
             return UserRole.CLIENTE;
