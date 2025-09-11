@@ -25,4 +25,10 @@ project(':r2dbc-mysql').projectDir = file('./infrastructure/driven-adapters/r2db
 include ':reactive-web'
 project(':reactive-web').projectDir = file('./infrastructure/entry-points/reactive-web')
 include ':helpers'
-project(':helpers').projectDir = file('./infrastructure/helpers/helpers')
+project(':helpers').projectDir = file('./infrastructure/helpers')
+include ':metrics'
+project(':metrics').projectDir = file('./infrastructure/helpers/metrics')
+include ':sqs-sender'
+project(':sqs-sender').projectDir = file('./infrastructure/driven-adapters/sqs-sender')
+include ':aws-sqs'
+project(':aws-sqs').projectDir = file('./infrastructure/driven-adapters/aws-sqs')

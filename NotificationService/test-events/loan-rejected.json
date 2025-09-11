@@ -1,0 +1,20 @@
+{
+  "Records": [
+    {
+      "messageId": "test-message-2",
+      "receiptHandle": "test-receipt-handle",
+      "body": "{\"messageId\":\"test-456\",\"eventType\":\"LOAN_REJECTED\",\"solicitudId\":12346,\"clientEmail\":\"cliente2@ejemplo.com\",\"clientName\":\"María González López\",\"decision\":\"REJECTED\",\"asesorEmail\":\"asesor@crediya.com\",\"timestamp\":\"2024-01-15T11:30:00\",\"reason\":\"Historial crediticio insuficiente. Se requiere mayor respaldo financiero.\"}",
+      "attributes": {
+        "ApproximateReceiveCount": "1",
+        "SentTimestamp": "1705319400000",
+        "SenderId": "AIDAIT2UOQQY3AUEKVGXU",
+        "ApproximateFirstReceiveTimestamp": "1705319400000"
+      },
+      "messageAttributes": {},
+      "md5OfBody": "test-md5",
+      "eventSource": "aws:sqs",
+      "eventSourceARN": "arn:aws:sqs:us-east-1:123456789012:loan-decisions-queue-dev.fifo",
+      "awsRegion": "us-east-1"
+    }
+  ]
+}

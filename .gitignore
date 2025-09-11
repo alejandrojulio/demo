@@ -1,0 +1,217 @@
+# ========================================
+# ARCHIVOS SENSIBLES - NUNCA COMMITEAR
+# ========================================
+
+# Credenciales AWS
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+aws-credentials*.env
+credentials.properties
+application-secrets.yml
+application-secrets.yaml
+
+# Archivos de configuración con credenciales
+**/application-prod.yml
+**/application-prod.yaml
+**/application-production.yml
+**/application-production.yaml
+
+# Claves SSH y certificados
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+*.crt
+*.cert
+
+# ========================================
+# JAVA / SPRING BOOT
+# ========================================
+
+# Compiled class files
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+
+# Build directories
+**/target/
+**/build/
+**/out/
+**/bin/
+
+# Gradle
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+
+# Maven
+.mvn/
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Spring Boot
+spring-boot-starter-actuator*.log
+
+# ========================================
+# IDEs
+# ========================================
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Eclipse
+.project
+.classpath
+.c9/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+.recommenders
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# ========================================
+# NODEJS / NPM (si tienes frontend)
+# ========================================
+
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# ========================================
+# DOCKER
+# ========================================
+
+# Docker override files
+docker-compose.override.yml
+docker-compose.override.yaml
+
+# ========================================
+# LOGS
+# ========================================
+
+# Application logs
+*.log
+logs/
+*.log.*
+/logs/
+
+# ========================================
+# BASES DE DATOS
+# ========================================
+
+# H2 Database
+*.h2.db
+*.mv.db
+*.trace.db
+
+# SQLite
+*.sqlite
+*.sqlite3
+*.db
+
+# ========================================
+# TEMPORALES
+# ========================================
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# ========================================
+# AWS / TERRAFORM (si usas IaC)
+# ========================================
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# AWS CLI
+.aws/
+
+# ========================================
+# OTROS
+# ========================================
+
+# Backup files
+*.backup
+*.bak
+*.orig
+
+# Archive files
+*.zip
+*.tar.gz
+*.rar
+
+# Package files
+*.deb
+*.rpm
+
+# ========================================
+# PERMITIR ARCHIVOS IMPORTANTES
+# ========================================
+
+# Permitir archivos de ejemplo (sin credenciales reales)
+!aws-credentials-example.env
+!application-example.yml
+!.env.example
+
+# Permitir archivos de configuración de Docker
+!docker-compose.yml
+!Dockerfile
+
+# Permitir archivos de configuración de build
+!build.gradle
+!pom.xml
+!gradle.properties
+!settings.gradle
+
+*.md

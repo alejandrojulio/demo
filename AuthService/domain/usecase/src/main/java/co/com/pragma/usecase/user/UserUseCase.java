@@ -1,5 +1,6 @@
 package co.com.pragma.usecase.user;
 
+import co.com.pragma.model.auth.gateways.PasswordEncoder;
 import co.com.pragma.model.user.gateways.ApplicationLogger;
 import co.com.pragma.model.user.User;
 import co.com.pragma.model.user.UserDTO;
@@ -7,18 +8,16 @@ import co.com.pragma.model.user.UserResponseDTO;
 import co.com.pragma.model.user.UserMapper;
 import co.com.pragma.model.user.gateways.UserRepository;
 import co.com.pragma.usecase.user.UserUseCaseConstants;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.util.regex.Pattern;
 
-@Service
 public class UserUseCase {
 
     private final UserRepository userRepository;
     private final ApplicationLogger logger;
+    private final PasswordEncoder passwordEncoder;
 
     private static final Pattern EMAIL_PATTERN = Pattern.compile(
             "^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})$"
@@ -27,9 +26,10 @@ public class UserUseCase {
     private static final BigDecimal MIN_SALARY = BigDecimal.ZERO;
     private static final BigDecimal MAX_SALARY = new BigDecimal("15000000");
 
-    public UserUseCase(UserRepository userRepository, ApplicationLogger logger) {
+    public UserUseCase(UserRepository userRepository, ApplicationLogger logger, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.logger = logger;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public Mono<UserResponseDTO> getuser(String id) {
@@ -46,7 +46,6 @@ public class UserUseCase {
                 .doOnError(error -> logger.error(UserUseCaseConstants.LOG_ERROR_SEARCHING_USER + id, error));
     }
 
-    @Transactional
     public Mono<UserResponseDTO> createUser(UserDTO userDTO) {
         logger.info(UserUseCaseConstants.LOG_CREATING_USER, userDTO.getEmail());
 
@@ -57,7 +56,7 @@ public class UserUseCase {
                 .flatMap(this::validateEmailFormat)
                 .flatMap(this::validateSalaryRange)
                 .flatMap(this::ensureEmailIsUnique)
-                .map(UserMapper::enrichUserData)
+                .map(this::encryptPasswordAndEnrichData)
                 .flatMap(userRepository::save) // ← Operación transaccional
                 .map(UserMapper::toResponseDTO)
                 .doOnSuccess(savedUser -> logger.info(UserUseCaseConstants.LOG_USER_CREATED_SUCCESS, savedUser.getId()))
@@ -134,5 +133,36 @@ public class UserUseCase {
                 });
     }
 
-    // El método enrichUserData ahora está en UserMapper
+    /**
+     * Encripta la contraseña y enriquece los datos del usuario
+     */
+    private User encryptPasswordAndEnrichData(User user) {
+        logger.info("Encriptando contraseña para usuario: {}", user.getEmail());
+        
+        // Encriptar contraseña
+        String encryptedPassword = passwordEncoder.encode(user.getPassword());
+        
+        // Enriquecer datos y establecer contraseña encriptada
+        User enrichedUser = UserMapper.enrichUserData(user);
+        
+        return enrichedUser.toBuilder()
+                .password(encryptedPassword)
+                .build();
+    }
+
+    // Validación adicional para contraseña
+    private Mono<User> validatePasswordRequirements(User user) {
+        logger.info("Validando requisitos de contraseña para usuario: {}", user.getEmail());
+        
+        if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+            return Mono.error(new IllegalArgumentException("Password is required"));
+        }
+        
+        if (user.getPassword().length() < 6) {
+            return Mono.error(new IllegalArgumentException("Password must be at least 6 characters long"));
+        }
+        
+        logger.info("Contraseña válida para usuario: {}", user.getEmail());
+        return Mono.just(user);
+    }
 }

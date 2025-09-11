@@ -1,0 +1,190 @@
+# Docker Compose para CrediYa - Sistema Completo de Gestión de Préstamos
+# Incluye microservicios de Autenticación y Solicitudes con sus bases de datos
+
+version: '3.8'
+
+# ========================================
+# SERVICIOS
+# ========================================
+services:
+
+  # ========================================
+  # BASE DE DATOS - MySQL Única para CrediYa
+  # ========================================
+  mysql-crediya:
+    image: mysql:8.0
+    container_name: crediya-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_2025
+      MYSQL_DATABASE: crediya_db
+      MYSQL_USER: crediya_user
+      MYSQL_PASSWORD: crediya_pass
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_unicode_ci
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_crediya_data:/var/lib/mysql
+      - ./database/schema-init.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./database/data-init.sql:/docker-entrypoint-initdb.d/02-data.sql:ro
+    networks:
+      - crediya-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "crediya_user", "-pcrediya_pass"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --innodb-buffer-pool-size=512M
+
+  # ========================================
+  # MICROSERVICIO - Autenticación
+  # ========================================
+  auth-service:
+    build:
+      context: ./AuthService
+      dockerfile: Dockerfile
+    container_name: crediya-auth-service
+    restart: unless-stopped
+    environment:
+      # Configuración de Base de Datos
+      SPRING_R2DBC_URL: r2dbc:mysql://mysql-crediya:3306/crediya_db
+      SPRING_R2DBC_USERNAME: crediya_user
+      SPRING_R2DBC_PASSWORD: crediya_pass
+      
+      # Configuración del Servidor
+      SERVER_PORT: 8080
+      SPRING_PROFILES_ACTIVE: docker
+      
+      # Configuración JWT
+      JWT_SECRET: CrediYa2025SecretKeyForJWTTokensVerySecureAndLong123456789
+      JWT_EXPIRATION: 3600000
+      
+      # Configuración de Logs
+      LOGGING_LEVEL_CO_COM_PRAGMA: DEBUG
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_R2DBC: DEBUG
+      
+      # Configuración de Pool de Conexiones
+      SPRING_R2DBC_POOL_ENABLED: true
+      SPRING_R2DBC_POOL_INITIAL_SIZE: 5
+      SPRING_R2DBC_POOL_MAX_SIZE: 20
+      SPRING_R2DBC_POOL_MAX_IDLE_TIME: 30m
+      
+      # Health Check
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics
+      MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED: true
+      
+    ports:
+      - "8080:8080"
+    volumes:
+      - auth_logs:/app/logs
+    networks:
+      - crediya-network
+    depends_on:
+      mysql-crediya:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # ========================================
+  # MICROSERVICIO - Solicitudes de Préstamos
+  # ========================================
+  load-request-service:
+    build:
+      context: ./LoadRequestService
+      dockerfile: Dockerfile
+    container_name: crediya-load-request-service
+    restart: unless-stopped
+    environment:
+      # Configuración de Base de Datos
+      SPRING_R2DBC_URL: r2dbc:mysql://mysql-crediya:3306/crediya_db
+      SPRING_R2DBC_USERNAME: crediya_user
+      SPRING_R2DBC_PASSWORD: crediya_pass
+      
+      # Configuración del Servidor
+      SERVER_PORT: 8081
+      SPRING_PROFILES_ACTIVE: docker
+      
+      # Configuración de Servicios Externos
+      AUTH_SERVICE_URL: http://auth-service:8080
+      AUTH_SERVICE_VALIDATE_TOKEN_ENDPOINT: /api/v1/auth/validate-token
+      
+      # Configuración CORS
+      CORS_ALLOWED_ORIGINS: http://localhost:4200,http://localhost:8080,http://localhost:8081
+      
+      # Configuración AWS para notificaciones
+      AWS_REGION: ${AWS_REGION:-us-east-2}
+      AWS_SQS_QUEUE_URL: ${AWS_SQS_QUEUE_URL:-https://sqs.us-east-2.amazonaws.com/882309621524/sqs_notificaciones}
+      # Credenciales AWS (configurar en archivo .env)
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      
+      # Configuración de Logs
+      LOGGING_LEVEL_CO_COM_PRAGMA: DEBUG
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_R2DBC: DEBUG
+      
+      # Configuración de Pool de Conexiones
+      SPRING_R2DBC_POOL_ENABLED: true
+      SPRING_R2DBC_POOL_INITIAL_SIZE: 5
+      SPRING_R2DBC_POOL_MAX_SIZE: 20
+      SPRING_R2DBC_POOL_MAX_IDLE_TIME: 30m
+      
+      # Health Check
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics
+      MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED: true
+      
+    ports:
+      - "8081:8081"
+    volumes:
+      - solicitudes_logs:/app/logs
+    networks:
+      - crediya-network
+    depends_on:
+      mysql-crediya:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+
+# ========================================
+# VOLÚMENES PERSISTENTES
+# ========================================
+volumes:
+  # Datos de la base de datos única (persistente)
+  mysql_crediya_data:
+    driver: local
+    name: crediya_mysql_data
+  
+  # Logs de las aplicaciones
+  auth_logs:
+    driver: local
+    name: crediya_auth_logs
+    
+  solicitudes_logs:
+    driver: local
+    name: crediya_solicitudes_logs
+
+# ========================================
+# REDES
+# ========================================
+networks:
+  crediya-network:
+    driver: bridge
+    name: crediya-network
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

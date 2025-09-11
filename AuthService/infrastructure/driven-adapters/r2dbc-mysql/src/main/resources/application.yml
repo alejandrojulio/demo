@@ -10,7 +10,7 @@ spring:
 
   # ✅ NUEVO: Configuración R2DBC estándar de Spring Boot
   r2dbc:
-    url: r2dbc:mysql://localhost:3306/demo
+    url: r2dbc:mysql://localhost:3306/crediya_db
     username: root
     password: "1234"
     pool:
@@ -35,8 +35,8 @@ cors:
   allowed-origins: "http://localhost:4200,http://localhost:8080"
 adapters:
   r2dbc:
-    host: localhost
-    port: 3306
-    database: demo
-    username: root
-    password: 1234
+    host: ${MYSQL_HOST:localhost}
+    port: ${MYSQL_PORT:3306}
+    database: ${MYSQL_DATABASE:crediya_db}
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:1234}

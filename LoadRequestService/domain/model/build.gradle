@@ -1,3 +1,4 @@
 dependencies {
-    implementation 'org.springframework:spring-context'
+    // Solo reactor-core permitido en Model para arquitectura hexagonal pura
+    implementation 'io.projectreactor:reactor-core'
 }
