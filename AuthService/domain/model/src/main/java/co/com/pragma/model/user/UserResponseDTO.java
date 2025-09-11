@@ -4,6 +4,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @Getter
@@ -22,6 +23,10 @@ public class UserResponseDTO {
     private String phone;
     private String email;
     private BigDecimal baseSalary;
+    private UserRole role;
+    private boolean isActive;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private String fullName;
     private boolean isAdult;
 }

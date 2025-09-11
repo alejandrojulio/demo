@@ -1,6 +1,6 @@
 package co.com.pragma.model.user;
 
-// No se necesitan imports adicionales
+import co.com.pragma.model.role.RoleMapper;
 
 public class UserMapper {
 
@@ -18,6 +18,11 @@ public class UserMapper {
                 .phone(userDTO.getPhone())
                 .email(userDTO.getEmail())
                 .baseSalary(userDTO.getBaseSalary())
+                .password(userDTO.getPassword()) // Contraseña sin encriptar (se encriptará en el Use Case)
+                .role(userDTO.getRole() != null ? userDTO.getRole() : UserRole.CLIENTE)
+                .isActive(true) // Por defecto los usuarios nuevos están activos
+                .createdAt(java.time.LocalDateTime.now())
+                .updatedAt(java.time.LocalDateTime.now())
                 .build();
     }
 
@@ -32,6 +37,10 @@ public class UserMapper {
                 .phone(user.getPhone())
                 .email(user.getEmail())
                 .baseSalary(user.getBaseSalary())
+                .role(user.getRole())
+                .isActive(user.isActive())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
                 .fullName(user.getFullName())
                 .isAdult(user.isAdult())
                 .build();
@@ -45,6 +54,8 @@ public class UserMapper {
                 .lastName(user.getLastName() != null ? user.getLastName().trim() : null)
                 .address(user.getAddress() != null ? user.getAddress().trim() : null)
                 .phone(user.getPhone() != null ? user.getPhone().trim() : null)
+                .role(user.getRole() != null ? user.getRole() : UserRole.CLIENTE) // Default role
                 .build();
     }
+    
 }

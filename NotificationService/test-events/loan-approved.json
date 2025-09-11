@@ -1,0 +1,20 @@
+{
+  "Records": [
+    {
+      "messageId": "test-message-1",
+      "receiptHandle": "test-receipt-handle",
+      "body": "{\"messageId\":\"test-123\",\"eventType\":\"LOAN_APPROVED\",\"solicitudId\":12345,\"clientEmail\":\"cliente@ejemplo.com\",\"clientName\":\"Juan Pérez\",\"decision\":\"APPROVED\",\"asesorEmail\":\"asesor@crediya.com\",\"timestamp\":\"2024-01-15T10:30:00\",\"montoAprobado\":\"$2,500,000\",\"tasaInteres\":\"12.5%\",\"plazoAprobado\":24,\"pagoMensual\":\"$125,000\"}",
+      "attributes": {
+        "ApproximateReceiveCount": "1",
+        "SentTimestamp": "1705315800000",
+        "SenderId": "AIDAIT2UOQQY3AUEKVGXU",
+        "ApproximateFirstReceiveTimestamp": "1705315800000"
+      },
+      "messageAttributes": {},
+      "md5OfBody": "test-md5",
+      "eventSource": "aws:sqs",
+      "eventSourceARN": "arn:aws:sqs:us-east-1:123456789012:loan-decisions-queue-dev.fifo",
+      "awsRegion": "us-east-1"
+    }
+  ]
+}

@@ -22,3 +22,32 @@ management:
         enabled: true
 cors:
   allowed-origins: "http://localhost:4200,http://localhost:8081"
+auth-service:
+  base-url: "http://localhost:8080"
+  timeout: 5000
+logging:
+  level:
+    co.com.pragma.security: "DEBUG"
+    co.com.pragma.api: "DEBUG"
+    org.springframework.security: "DEBUG"
+    org.springframework.web.reactive.function.client: "DEBUG"
+# AWS Configuration
+aws:
+  region: ${AWS_REGION:us-east-2}
+  access-key-id: ${AWS_ACCESS_KEY_ID:your-access-key-here}
+  secret-access-key: ${AWS_SECRET_ACCESS_KEY:your-secret-key-here}
+  sqs:
+    loan-decisions-queue-url: ${AWS_SQS_QUEUE_URL:https://sqs.us-east-2.amazonaws.com/882309621524/sqs_notificaciones}
+    
+# Local development with LocalStack  
+local:
+  aws:
+    endpoint: "http://localhost:4566"
+    sqs:
+      loan-decisions-queue-url: "http://localhost:4566/000000000000/loan-decisions-queue-dev.fifo"
+      
+adapter:
+  sqs:
+    region: "us-east-1"
+    queueUrl: "http://localhost:4566/000000000000/sample"
+    endpoint: "http://localhost:4566 # For localstack only"

@@ -28,18 +28,18 @@ subprojects {
     }
 
     dependencies {
-        implementation 'io.projectreactor:reactor-core'
-        implementation 'io.projectreactor.addons:reactor-extra'
-
-        testImplementation 'io.projectreactor.tools:blockhound-junit-platform:1.0.13.RELEASE'
-
-        testImplementation 'io.projectreactor:reactor-test'
-        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        // Solo dependencias básicas en todos los módulos
         compileOnly "org.projectlombok:lombok:${lombokVersion}"
         annotationProcessor  "org.projectlombok:lombok:${lombokVersion}"
         testCompileOnly  "org.projectlombok:lombok:${lombokVersion}"
         testAnnotationProcessor  "org.projectlombok:lombok:${lombokVersion}"
+        
+        // Test dependencies comunes
+        testImplementation 'io.projectreactor:reactor-test'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        
+        // Platform BOM
         implementation platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
     }
 

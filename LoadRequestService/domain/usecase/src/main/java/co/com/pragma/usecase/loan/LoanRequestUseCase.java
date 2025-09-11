@@ -4,14 +4,12 @@ import co.com.pragma.model.loan.LoanRequest;
 import co.com.pragma.model.loan.LoanRequestDTO;
 import co.com.pragma.model.loan.gateways.LoanApplicationLogger;
 import co.com.pragma.model.loan.gateways.LoanRequestRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Service
 public class LoanRequestUseCase {
 
     private final LoanRequestRepository loanRequestRepository;
@@ -28,7 +26,6 @@ public class LoanRequestUseCase {
         this.logger = logger;
     }
 
-    @Transactional
     public Mono<LoanRequest> createLoanRequest(LoanRequestDTO loanRequestDTO) {
         logger.info(LoanRequestUseCaseConstants.LOG_CREATING_LOAN_REQUEST, loanRequestDTO.getClientDocumentId());
 
@@ -140,5 +137,41 @@ public class LoanRequestUseCase {
                 .updatedAt(now)
                 .notes(dto.getNotes() != null ? dto.getNotes().trim() : null)
                 .build();
+    }
+
+    /**
+     * Actualiza una solicitud de préstamo existente
+     * Solo se permite cambiar el estado y las notas
+     */
+    public Mono<LoanRequest> updateLoanRequest(String loanRequestId, LoanRequestDTO loanRequestDTO) {
+        logger.info("Iniciando actualización de solicitud de préstamo con ID: {}", loanRequestId);
+        
+        return loanRequestRepository.findById(Long.valueOf(loanRequestId))
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Solicitud de préstamo no encontrada con ID: " + loanRequestId)))
+                .flatMap(existingLoanRequest -> {
+                    // Solo permitir actualizaciones de estado y notas por un asesor
+                    LoanRequest updatedLoanRequest = existingLoanRequest.toBuilder()
+                            .updatedAt(LocalDateTime.now())
+                            .notes(loanRequestDTO.getNotes() != null ? loanRequestDTO.getNotes().trim() : existingLoanRequest.getNotes())
+                            .build();
+                    
+                    logger.info("Actualizando solicitud de préstamo para cliente: {}", updatedLoanRequest.getClientDocumentId());
+                    return loanRequestRepository.update(updatedLoanRequest);
+                })
+                .doOnSuccess(updatedLoanRequest -> logger.info("Solicitud actualizada exitosamente con ID: {}", updatedLoanRequest.getId()))
+                .doOnError(error -> logger.error("Error actualizando solicitud con ID: " + loanRequestId, error));
+    }
+
+    /**
+     * Obtiene todas las solicitudes de préstamo
+     * Solo accesible para asesores
+     */
+    public Flux<LoanRequest> getAllLoanRequests() {
+        logger.info("Obteniendo todas las solicitudes de préstamo");
+        
+        return loanRequestRepository.findAll()
+                .doOnNext(loanRequest -> logger.warn("Solicitud encontrada: {} para cliente: {}", "test"))
+                .doOnComplete(() -> logger.info("Consulta de todas las solicitudes completada"))
+                .doOnError(error -> logger.error("Error obteniendo todas las solicitudes", error));
     }
 }
