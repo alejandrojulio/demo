@@ -8,6 +8,7 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -36,4 +37,18 @@ public class UserEntity {
 
     @Column("base_salary")
     private BigDecimal baseSalary;
+
+    @Column("password_hash")
+    private String password;
+
+    private String role;
+
+    @Column("is_active")
+    private boolean isActive;
+
+    @Column("created_at")
+    private LocalDateTime createdAt;
+
+    @Column("updated_at")
+    private LocalDateTime updatedAt;
 }

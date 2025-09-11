@@ -22,6 +22,14 @@ public class LoanRequest {
     private LocalDateTime updatedAt;
     private String notes;
     
+    // Campos adicionales para aprobaciones/rechazos
+    private BigDecimal approvedAmount;
+    private BigDecimal interestRate;
+    private BigDecimal monthlyPayment;
+    private LocalDateTime approvedAt;
+    private String approvedBy;
+    private String rejectionReason;
+    
     public enum LoanType {
         PERSONAL("Personal"),
         VEHICLE("Vehículo"),
@@ -40,10 +48,11 @@ public class LoanRequest {
     }
     
     public enum LoanStatus {
-        PENDING_REVIEW("Pendiente"),
+        PENDING_REVIEW("Pendiente de revisión"),
         APPROVED("Aprobada"),
         REJECTED("Rechazada"),
-        CANCELLED("Cancelada");
+        CANCELLED("Cancelada"),
+        MANUAL_REVIEW("Revisión manual");
         
         private final String displayName;
         

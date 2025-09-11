@@ -1,14 +1,31 @@
 package co.com.pragma.config;
 
-import org.springframework.context.annotation.ComponentScan;
+import co.com.pragma.model.auth.gateways.JwtTokenGenerator;
+import co.com.pragma.model.auth.gateways.PasswordEncoder;
+import co.com.pragma.model.user.gateways.ApplicationLogger;
+import co.com.pragma.model.user.gateways.UserRepository;
+import co.com.pragma.usecase.auth.AuthenticationUseCase;
+import co.com.pragma.usecase.user.UserUseCase;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.FilterType;
 
 @Configuration
-@ComponentScan(basePackages = "co.com.pragma.usecase",
-        includeFilters = {
-                @ComponentScan.Filter(type = FilterType.REGEX, pattern = "^.+UseCase$")
-        },
-        useDefaultFilters = false)
 public class UseCasesConfig {
+
+    @Bean
+    public AuthenticationUseCase authenticationUseCase(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            JwtTokenGenerator jwtTokenGenerator,
+            ApplicationLogger logger) {
+        return new AuthenticationUseCase(userRepository, passwordEncoder, jwtTokenGenerator, logger);
+    }
+
+    @Bean
+    public UserUseCase userUseCase(
+            UserRepository userRepository,
+            ApplicationLogger logger,
+            PasswordEncoder passwordEncoder) {
+        return new UserUseCase(userRepository, logger, passwordEncoder);
+    }
 }

@@ -9,6 +9,9 @@ dependencies {
     //implementation 'dev.miku:r2dbc-mysql:0.8.2.RELEASE'
     implementation 'io.asyncer:r2dbc-mysql:1.2.0'
     implementation 'org.reactivecommons.utils:object-mapper-api:0.1.0'
+    
+    // Jackson for JSON handling in Role permissions
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
 
     testImplementation 'org.reactivecommons.utils:object-mapper:0.1.0'
 }

@@ -44,4 +44,23 @@ public class LoanRequestEntity {
     
     @Column("notes")
     private String notes;
+    
+    // Campos adicionales para evaluación/aprobación
+    @Column("interest_rate")
+    private BigDecimal interestRate;
+    
+    @Column("monthly_payment")
+    private BigDecimal monthlyPayment;
+    
+    @Column("approved_amount")
+    private BigDecimal approvedAmount;
+    
+    @Column("approved_at")
+    private LocalDateTime approvedAt;
+    
+    @Column("approved_by")
+    private String approvedBy;
+    
+    @Column("rejection_reason")
+    private String rejectionReason;
 }

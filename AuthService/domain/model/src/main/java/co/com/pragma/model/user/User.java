@@ -3,6 +3,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @Getter
@@ -20,6 +21,11 @@ public class User {
     private String phone;
     private String email;
     private BigDecimal baseSalary;
+    private String password;
+    private UserRole role;
+    private boolean isActive;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     public boolean isAdult() {
         return birthDate != null && LocalDate.now().minusYears(18).isAfter(birthDate);
