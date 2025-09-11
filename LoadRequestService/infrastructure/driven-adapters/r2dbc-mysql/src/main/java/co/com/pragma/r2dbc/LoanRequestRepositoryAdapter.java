@@ -46,7 +46,7 @@ public class LoanRequestRepositoryAdapter extends ReactiveAdapterOperations<
 
     @Override
     public Mono<LoanRequest> update(LoanRequest loanRequest) {
-        return super.save(loanRequest); // En reactive R2DBC, save hace tanto insert como update
+        return super.save(loanRequest);
     }
 
     @Override
@@ -55,8 +55,12 @@ public class LoanRequestRepositoryAdapter extends ReactiveAdapterOperations<
     }
 
     @Override
-    public Mono<Boolean> existsByClientDocumentAndType(String clientDocumentId, LoanRequest.LoanType loanType) {
-        return repository.existsByClientDocumentIdAndLoanType(clientDocumentId, loanType.name());
+    public Mono<Boolean> existsByClientDocumentAndTypeAndPendingStatus(String clientDocumentId, LoanRequest.LoanType loanType) {
+        return repository.existsByClientDocumentIdAndLoanTypeAndStatus(
+                clientDocumentId, 
+                loanType.name(), 
+                LoanRequest.LoanStatus.PENDING_REVIEW.name()
+        );
     }
 
     @Override
@@ -134,10 +138,6 @@ public class LoanRequestRepositoryAdapter extends ReactiveAdapterOperations<
     }
 
 
-    /**
-     * Función pura para mapear Row a DTO
-     * Maneja todos los campos de forma segura
-     */
     private LoanRequestReviewDTO mapRowToDTO(io.r2dbc.spi.Row row, io.r2dbc.spi.RowMetadata metadata) {
         return LoanRequestReviewDTO.builder()
                 .id(row.get("id", Long.class))
@@ -160,9 +160,6 @@ public class LoanRequestRepositoryAdapter extends ReactiveAdapterOperations<
                 .build();
     }
 
-    /**
-     * Función pura para construir nombre completo
-     */
     private String buildFullName(String firstName, String lastName) {
         if (firstName == null && lastName == null) return "";
         if (firstName == null) return lastName;
@@ -170,9 +167,6 @@ public class LoanRequestRepositoryAdapter extends ReactiveAdapterOperations<
         return (firstName + " " + lastName).trim();
     }
 
-    /**
-     * Función pura para mapear Row a DTO completo (para notificaciones)
-     */
     private LoanRequestReviewDTO mapRowToCompleteDTO(io.r2dbc.spi.Row row, io.r2dbc.spi.RowMetadata metadata) {
         return LoanRequestReviewDTO.builder()
                 .id(row.get("id", Long.class))
@@ -195,9 +189,6 @@ public class LoanRequestRepositoryAdapter extends ReactiveAdapterOperations<
                 .build();
     }
 
-    /**
-     * Función pura para calcular tasa de interés
-     */
     private BigDecimal calculateInterestRate(String loanType) {
         if (loanType == null) return BigDecimal.valueOf(15.0);
         

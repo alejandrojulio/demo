@@ -30,9 +30,6 @@ public class AuthenticationUseCase {
         this.logger = logger;
     }
 
-    /**
-     * Autentica un usuario y genera un token JWT
-     */
     public Mono<LoginResponseDTO> login(LoginRequestDTO loginRequest) {
         logger.info(MessageFormatter.format(Messages.LOG_AUTH_STARTED, loginRequest.getEmail()));
         
@@ -56,9 +53,6 @@ public class AuthenticationUseCase {
                 });
     }
 
-    /**
-     * Valida un token JWT y devuelve la información del usuario
-     */
     public Mono<TokenValidationResponseDTO> validateToken(String token) {
         logger.info(Messages.LOG_TOKEN_VALIDATION_STARTED);
         

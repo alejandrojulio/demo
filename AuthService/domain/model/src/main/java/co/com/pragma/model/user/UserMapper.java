@@ -5,7 +5,6 @@ import co.com.pragma.model.role.RoleMapper;
 public class UserMapper {
 
     private UserMapper() {
-        // Constructor privado para evitar instanciación
     }
 
     public static User fromDTO(UserDTO userDTO) {
@@ -18,9 +17,9 @@ public class UserMapper {
                 .phone(userDTO.getPhone())
                 .email(userDTO.getEmail())
                 .baseSalary(userDTO.getBaseSalary())
-                .password(userDTO.getPassword()) // Contraseña sin encriptar (se encriptará en el Use Case)
+                .password(userDTO.getPassword())
                 .role(userDTO.getRole() != null ? userDTO.getRole() : UserRole.CLIENTE)
-                .isActive(true) // Por defecto los usuarios nuevos están activos
+                .isActive(true)
                 .createdAt(java.time.LocalDateTime.now())
                 .updatedAt(java.time.LocalDateTime.now())
                 .build();
@@ -54,7 +53,7 @@ public class UserMapper {
                 .lastName(user.getLastName() != null ? user.getLastName().trim() : null)
                 .address(user.getAddress() != null ? user.getAddress().trim() : null)
                 .phone(user.getPhone() != null ? user.getPhone().trim() : null)
-                .role(user.getRole() != null ? user.getRole() : UserRole.CLIENTE) // Default role
+                .role(user.getRole() != null ? user.getRole() : UserRole.CLIENTE)
                 .build();
     }
     

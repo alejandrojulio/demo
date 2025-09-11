@@ -22,7 +22,6 @@ public class LoanRequest {
     private LocalDateTime updatedAt;
     private String notes;
     
-    // Campos adicionales para aprobaciones/rechazos
     private BigDecimal approvedAmount;
     private BigDecimal interestRate;
     private BigDecimal monthlyPayment;
@@ -70,7 +69,7 @@ public class LoanRequest {
     }
     
     public boolean isValidTerm() {
-        return termInMonths != null && termInMonths > 0 && termInMonths <= 120; // Máximo 10 años
+        return termInMonths != null && termInMonths > 0 && termInMonths <= 120;
     }
     
     public boolean isPendingReview() {

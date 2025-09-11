@@ -1,68 +1,40 @@
 package co.com.pragma.model.common;
 
-/**
- * Constantes centralizadas para mensajes del sistema CrediYa
- * Organizadas por categorías para facilitar el mantenimiento
- */
+
 public final class Messages {
 
     private Messages() {
-        // Constructor privado para evitar instanciación
     }
 
-    // =========================================
-    // MENSAJES DE VALIDACIÓN GENÉRICOS
-    // =========================================
-    
     public static final String VALIDATION_REQUIRED_FIELD = "El campo {0} es obligatorio";
     public static final String VALIDATION_INVALID_RANGE = "El campo {0} debe estar entre {1} y {2}";
     public static final String VALIDATION_MUST_BE_POSITIVE = "El campo {0} debe ser mayor a cero";
     public static final String VALIDATION_INVALID_FORMAT = "El formato del campo {0} no es válido";
     public static final String VALIDATION_ALREADY_EXISTS = "El {0} ya existe: {1}";
     public static final String VALIDATION_NOT_FOUND = "No se encontró {0} con {1}: {2}";
-    
-    // =========================================
-    // MENSAJES DE AUTENTICACIÓN Y AUTORIZACIÓN
-    // =========================================
-    
+
     public static final String AUTH_USER_NOT_AUTHENTICATED = "No se encontró información del usuario autenticado";
     public static final String AUTH_INVALID_CREDENTIALS = "Credenciales inválidas";
     public static final String AUTH_ACCESS_DENIED = "No tiene permisos para acceder a este recurso";
     public static final String AUTH_INVALID_TOKEN = "Token inválido o expirado";
     public static final String AUTH_INSUFFICIENT_PERMISSIONS = "Usuario {0} sin permisos para: {1} {2} (rol: {3})";
-    
-    // =========================================
-    // MENSAJES DE OPERACIONES CRUD
-    // =========================================
-    
+
     public static final String OPERATION_SUCCESS_CREATED = "{0} creado exitosamente";
     public static final String OPERATION_SUCCESS_UPDATED = "{0} actualizado exitosamente";
     public static final String OPERATION_SUCCESS_RETRIEVED = "{0} obtenido exitosamente";
     public static final String OPERATION_SUCCESS_PROCESSED = "{0} procesado exitosamente";
-    
-    // =========================================
-    // MENSAJES DE ERROR GENÉRICOS
-    // =========================================
-    
+ 
     public static final String ERROR_UNEXPECTED = "Ha ocurrido un error inesperado. Por favor, inténtelo más tarde";
     public static final String ERROR_INVALID_STATE = "Estado inválido: {0}";
     public static final String ERROR_OPERATION_NOT_ALLOWED = "Operación no permitida en el estado actual";
     public static final String ERROR_INVALID_PARAMETERS = "Parámetros inválidos: {0}";
-    
-    // =========================================
-    // MENSAJES DE LOGGING GENÉRICOS
-    // =========================================
-    
+
     public static final String LOG_OPERATION_STARTED = "Iniciando {0} para: {1}";
     public static final String LOG_OPERATION_COMPLETED = "{0} completado exitosamente para: {1}";
     public static final String LOG_OPERATION_FAILED = "Error en {0} para: {1} - Error: {2}";
     public static final String LOG_VALIDATION_FAILED = "Validación fallida en {0}: {1}";
     public static final String LOG_USER_ACTION = "Usuario {0} {1} {2}";
-    
-    // =========================================
-    // MENSAJES ESPECÍFICOS DE SOLICITUDES
-    // =========================================
-    
+
     public static final String LOAN_REQUEST_CREATED = "Solicitud de préstamo creada exitosamente";
     public static final String LOAN_REQUEST_UPDATED = "Solicitud de préstamo actualizada exitosamente";
     public static final String LOAN_REQUESTS_RETRIEVED = "Solicitudes para revisión obtenidas exitosamente";
@@ -70,7 +42,37 @@ public final class Messages {
     
     public static final String LOAN_VALIDATION_AMOUNT_RANGE = "El monto del préstamo debe ser mayor a $100,000 y menor a $50,000,000";
     public static final String LOAN_VALIDATION_TERM_RANGE = "El plazo del préstamo debe estar entre 1 y 120 meses";
-    public static final String LOAN_VALIDATION_EXISTING = "El cliente ya tiene una solicitud de préstamo {0} pendiente o activa";
+    public static final String LOAN_VALIDATION_EXISTING = "El cliente ya tiene una solicitud de préstamo {0} pendiente de revisión";
+    
+    public static final String LOAN_CLIENT_DOCUMENT_REQUIRED = "El documento de identidad del cliente es obligatorio";
+    public static final String LOAN_AMOUNT_REQUIRED = "El monto del préstamo es obligatorio";
+    public static final String LOAN_TERM_REQUIRED = "El plazo del préstamo es obligatorio";
+    public static final String LOAN_TYPE_REQUIRED = "El tipo de préstamo es obligatorio";
+    public static final String LOAN_TYPE_INVALID = "El tipo de préstamo {0} no es válido";
+    
+
+    public static final String ERROR_LOAN_AMOUNT_INVALID = "El monto del préstamo debe ser mayor a $100,000 y menor a $50,000,000";
+    public static final String ERROR_LOAN_TERM_INVALID = "El plazo del préstamo debe estar entre 1 y 120 meses";
+    public static final String ERROR_LOAN_TYPE_INVALID = "El tipo de préstamo {0} no es válido";
+    public static final String ERROR_CLIENT_NOT_FOUND = "El cliente con documento {0} no fue encontrado";
+    public static final String ERROR_INVALID_LOAN_DATA = "Los datos de la solicitud de préstamo no son válidos";
+    
+    public static final String LOG_CREATING_LOAN_REQUEST = "Iniciando proceso de creación de solicitud de préstamo para cliente: {0}";
+    public static final String LOG_VALIDATING_LOAN_DATA = "Validando datos de la solicitud de préstamo para cliente: {0}";
+    public static final String LOG_SAVING_LOAN_REQUEST = "Guardando solicitud de préstamo para cliente: {0}";
+    public static final String LOG_LOAN_REQUEST_CREATED_SUCCESS = "Solicitud de préstamo creada exitosamente con ID: {0}";
+    public static final String LOG_ERROR_CREATING_LOAN_REQUEST = "Error al crear solicitud para cliente: {0}";
+    public static final String LOG_CHECKING_EXISTING_LOAN = "Verificando solicitudes existentes para cliente: {0} tipo: {1}";
+    public static final String LOG_EXISTING_LOAN_FOUND = "Cliente {0} ya tiene solicitud tipo {1} pendiente";
+    public static final String LOG_NO_EXISTING_LOAN = "Cliente {0} no tiene solicitudes tipo {1} pendientes";
+    public static final String LOG_ENRICHING_LOAN_DATA = "Enriqueciendo datos de solicitud para cliente: {0}";
+    public static final String LOG_VALIDATING_CLIENT_EXISTS = "Validando existencia del cliente: {0}";
+    public static final String LOG_VALIDATING_LOAN_AMOUNT = "Validando monto de préstamo {0} para cliente: {1}";
+    public static final String LOG_LOAN_AMOUNT_VALID = "Monto de préstamo válido para cliente: {0}";
+    public static final String LOG_VALIDATING_LOAN_TERM = "Validando plazo de préstamo {0} meses para cliente: {1}";
+    public static final String LOG_LOAN_TERM_VALID = "Plazo de préstamo válido para cliente: {0}";
+    public static final String LOG_VALIDATING_LOAN_TYPE = "Validando tipo de préstamo {0} para cliente: {1}";
+    public static final String LOG_LOAN_TYPE_VALID = "Tipo de préstamo válido para cliente: {0}";
     public static final String LOAN_VALIDATION_STATE_APPROVED = "La solicitud ya está aprobada";
     public static final String LOAN_VALIDATION_STATE_REJECTED = "La solicitud ya está rechazada";
     public static final String LOAN_VALIDATION_STATE_CANCELLED = "La solicitud está cancelada";
@@ -82,26 +84,14 @@ public final class Messages {
     public static final String LOAN_APPROVAL_TERM_REQUIRED = "El plazo aprobado es requerido y debe ser mayor a cero";
     public static final String LOAN_REJECTION_REASON_REQUIRED = "El motivo de rechazo es requerido";
     
-    // =========================================
-    // MENSAJES DE NOTIFICACIONES
-    // =========================================
-    
     public static final String NOTIFICATION_SENT_SUCCESS = "Notificación enviada exitosamente para solicitud {0}";
     public static final String NOTIFICATION_SEND_FAILED = "Error al enviar notificación para solicitud {0}: {1}";
     public static final String NOTIFICATION_MESSAGE_CREATED = "Mensaje de notificación creado para solicitud {0}, tipo: {1}";
     
-    // =========================================
-    // MENSAJES DE PAGINACIÓN
-    // =========================================
-    
     public static final String PAGINATION_EMPTY_PAGE_INFO = " (Página {0} está vacía. Hay {1} elementos totales en {2} páginas. Las páginas empiezan desde 0)";
     public static final String PAGINATION_INVALID_PAGE = "El número de página debe ser mayor o igual a 0";
     public static final String PAGINATION_INVALID_SIZE = "El tamaño de página debe estar entre 1 y 100";
-    
-    // =========================================
-    // VALORES DE CONFIGURACIÓN
-    // =========================================
-    
+
     public static final class Config {
         public static final String MIN_LOAN_AMOUNT = "100000";
         public static final String MAX_LOAN_AMOUNT = "50000000";
@@ -112,11 +102,6 @@ public final class Messages {
         
         private Config() {}
     }
-    
-    // =========================================
-    // HEADERS Y CONSTANTES TÉCNICAS
-    // =========================================
-    
     public static final class Headers {
         public static final String USER_ID = "X-User-Id";
         public static final String USER_EMAIL = "X-User-Email";
@@ -128,10 +113,6 @@ public final class Messages {
         
         private Headers() {}
     }
-    
-    // =========================================
-    // ENDPOINTS
-    // =========================================
     
     public static final class Endpoints {
         public static final String LOAN_REQUEST_BASE = "/api/v1/solicitud";
