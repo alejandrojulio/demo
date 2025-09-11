@@ -40,13 +40,11 @@ public class JwtAuthenticationFilter implements WebFilter {
         log.info("🔒 JwtAuthenticationFilter EJECUTÁNDOSE - Procesando solicitud: {} {}", method, path);
         System.out.println("🔒 JwtAuthenticationFilter EJECUTÁNDOSE - Procesando solicitud: " + method + " " + path);
 
-        // Rutas que no requieren autenticación (health checks, etc.)
         if (isPublicPath(path)) {
             log.info("Ruta pública, permitiendo acceso sin autenticación: {}", path);
             return chain.filter(exchange);
         }
 
-        // Extraer token del header Authorization
         String token = extractTokenFromRequest(request);
         if (token == null) {
             log.warn("Token JWT no encontrado en la solicitud a: {} {} - Headers: {}", method, path, request.getHeaders().toSingleValueMap());

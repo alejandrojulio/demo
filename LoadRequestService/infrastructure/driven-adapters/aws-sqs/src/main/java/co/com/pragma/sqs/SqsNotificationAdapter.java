@@ -9,15 +9,12 @@ import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-/**
- * Adaptador para envío de notificaciones via SQS
- * Envía mensajes reales a AWS SQS
- */
 @Component
 public class SqsNotificationAdapter implements NotificationGateway {
     
@@ -33,48 +30,55 @@ public class SqsNotificationAdapter implements NotificationGateway {
         this.objectMapper = new ObjectMapper();
         this.objectMapper.registerModule(new JavaTimeModule());
         
-        // Crear credenciales AWS
-        BasicAWSCredentials awsCredentials = new BasicAWSCredentials(accessKeyId, secretAccessKey);
+        // Intentar cargar credenciales del archivo .env
+        String finalAccessKey = accessKeyId;
+        String finalSecretKey = secretAccessKey;
         
-        // Crear cliente SQS con credenciales
+        try {
+            Dotenv dotenv = Dotenv.configure()
+                    .directory("../")
+                    .ignoreIfMissing()
+                    .load();
+            
+            if (dotenv.get("AWS_ACCESS_KEY_ID") != null) {
+                finalAccessKey = dotenv.get("AWS_ACCESS_KEY_ID");
+            }
+            
+            if (dotenv.get("AWS_SECRET_ACCESS_KEY") != null) {
+                finalSecretKey = dotenv.get("AWS_SECRET_ACCESS_KEY");
+            }
+            
+        } catch (Exception e) {
+            System.out.println("No se pudo cargar .env");
+        }
+        
+        BasicAWSCredentials awsCredentials = new BasicAWSCredentials(finalAccessKey, finalSecretKey);
         this.sqsClient = AmazonSQSClientBuilder.standard()
                 .withRegion(region)
                 .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
                 .build();
-        
-        System.out.println("🔑 Cliente SQS configurado para región: " + region);
-        System.out.println("🔗 Queue URL: " + queueUrl);
     }
     
     @Override
     public Mono<Void> sendNotification(NotificationMessage message) {
         return Mono.fromCallable(() -> {
             try {
-                // Convertir el mensaje a JSON
                 String messageBody = objectMapper.writeValueAsString(message);
-                
-                // Logear información del envío
-                System.out.println("🚀 ENVIANDO A SQS: " + queueUrl);
+                System.out.println("ENVIANDO A SQS: " + queueUrl);
                 System.out.println("📧 MENSAJE: " + messageBody);
-                System.out.println("   Tipo: " + message.getEventType());
-                System.out.println("   Cliente: " + message.getClientEmail());
-                System.out.println("   Solicitud: " + message.getSolicitudId());
-                System.out.println("   Decisión: " + message.getDecision());
-                
-                // Enviar mensaje real a SQS
                 SendMessageRequest sendMessageRequest = new SendMessageRequest()
                         .withQueueUrl(queueUrl)
                         .withMessageBody(messageBody);
                 
                 var result = sqsClient.sendMessage(sendMessageRequest);
-                System.out.println("✅ MENSAJE ENVIADO A SQS - MessageId: " + result.getMessageId());
+                System.out.println("MENSAJE ENVIADO A SQS - MessageId: " + result.getMessageId());
                 
                 return null;
             } catch (Exception e) {
                 throw new RuntimeException("Error al procesar notificación: " + e.getMessage(), e);
             }
         })
-        .subscribeOn(Schedulers.boundedElastic()) // Ejecutar en hilo separado
-        .then(); // Convertir a Mono<Void>
+        .subscribeOn(Schedulers.boundedElastic())
+        .then();
     }
 }

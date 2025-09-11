@@ -20,11 +20,7 @@ public class PasswordEncoderImpl implements PasswordEncoder {
 
     @Override
     public boolean matches(String rawPassword, String encodedPassword) {
-        System.out.println("DEBUG - Password check:");
-        System.out.println("  Raw password: " + rawPassword);
-        System.out.println("  Encoded password: " + encodedPassword);
         boolean matches = bCryptPasswordEncoder.matches(rawPassword, encodedPassword);
-        System.out.println("  Matches: " + matches);
         return matches;
     }
 }

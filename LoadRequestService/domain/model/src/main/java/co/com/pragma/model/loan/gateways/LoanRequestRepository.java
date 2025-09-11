@@ -12,7 +12,7 @@ public interface LoanRequestRepository {
     Mono<LoanRequest> findById(Long id);
     Mono<LoanRequest> update(LoanRequest loanRequest);
     Flux<LoanRequest> findAll();
-    Mono<Boolean> existsByClientDocumentAndType(String clientDocumentId, LoanRequest.LoanType loanType);
+    Mono<Boolean> existsByClientDocumentAndTypeAndPendingStatus(String clientDocumentId, LoanRequest.LoanType loanType);
     
     /**
      * Obtiene las solicitudes que requieren revisión manual con información del cliente

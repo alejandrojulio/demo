@@ -27,9 +27,6 @@ public class JwtUtil {
         this.expirationTimeInHours = expirationTimeInHours;
     }
 
-    /**
-     * Genera un token JWT para el usuario autenticado
-     */
     public String generateToken(String userId, String email, UserRole role, String document) {
         Instant now = Instant.now();
         Instant expiration = now.plus(expirationTimeInHours, ChronoUnit.HOURS);
@@ -45,9 +42,6 @@ public class JwtUtil {
                 .compact();
     }
 
-    /**
-     * Valida un token JWT y extrae las claims
-     */
     public Claims validateToken(String token) {
         try {
             return Jwts.parser()
@@ -60,42 +54,27 @@ public class JwtUtil {
         }
     }
 
-    /**
-     * Extrae el ID del usuario del token
-     */
     public String extractUserId(String token) {
         Claims claims = validateToken(token);
         return claims.getSubject();
     }
 
-    /**
-     * Extrae el email del usuario del token
-     */
     public String extractEmail(String token) {
         Claims claims = validateToken(token);
         return claims.get(Messages.JwtClaims.EMAIL, String.class);
     }
 
-    /**
-     * Extrae el rol del usuario del token
-     */
     public UserRole extractRole(String token) {
         Claims claims = validateToken(token);
         String roleStr = claims.get(Messages.JwtClaims.ROLE, String.class);
         return UserRole.valueOf(roleStr);
     }
 
-    /**
-     * Extrae el documento del usuario del token
-     */
     public String extractDocument(String token) {
         Claims claims = validateToken(token);
         return claims.get(Messages.JwtClaims.DOCUMENT, String.class);
     }
 
-    /**
-     * Verifica si el token ha expirado
-     */
     public boolean isTokenExpired(String token) {
         try {
             Claims claims = validateToken(token);

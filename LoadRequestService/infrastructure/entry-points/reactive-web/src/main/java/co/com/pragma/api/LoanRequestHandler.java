@@ -29,13 +29,7 @@ public class LoanRequestHandler {
     private final ListLoanRequestsForReviewUseCase listLoanRequestsForReviewUseCase;
     private final ProcessLoanDecisionUseCase processLoanDecisionUseCase;
 
-    /**
-     * Crea una nueva solicitud de préstamo
-     * Solo accesible para usuarios con rol CLIENTE
-     * Valida que el cliente solo pueda crear solicitudes para sí mismo
-     */
     public Mono<ServerResponse> createLoanRequest(ServerRequest serverRequest) {
-        // Extraer información del usuario autenticado
         SecurityContextHelper.AuthenticatedUser authenticatedUser = 
                 SecurityContextHelper.getAuthenticatedUser(serverRequest);
         
@@ -44,7 +38,6 @@ public class LoanRequestHandler {
 
         return serverRequest.bodyToMono(LoanRequestDTO.class)
                 .flatMap(loanRequestDTO -> {
-                    // Validar que el cliente solo pueda crear solicitudes para sí mismo
                     if (!SecurityContextHelper.validateUserAccess(loanRequestDTO.getClientDocumentId(), authenticatedUser)) {
                         log.warn(MessageFormatter.format(Messages.LOG_USER_ACTION, 
                                authenticatedUser.getEmail(), "intentó crear solicitud para cliente diferente:", loanRequestDTO.getClientDocumentId()));
@@ -52,7 +45,6 @@ public class LoanRequestHandler {
                                 .bodyValue(ApiResponse.error(Messages.AUTH_ACCESS_DENIED));
                     }
                     
-                    // Si la validación pasa, crear la solicitud y devolver la respuesta
                     return loanRequestUseCase.createLoanRequest(loanRequestDTO)
                             .flatMap(createdLoanRequest -> {
                                 log.info(MessageFormatter.format(Messages.LOG_USER_ACTION, 
@@ -69,10 +61,6 @@ public class LoanRequestHandler {
                 .onErrorResume(Exception.class, this::handleGenericError);
     }
 
-    /**
-     * Actualiza una solicitud de préstamo existente
-     * Solo accesible para usuarios con rol ASESOR
-     */
     public Mono<ServerResponse> updateLoanRequest(ServerRequest serverRequest) {
         SecurityContextHelper.AuthenticatedUser authenticatedUser = 
                 SecurityContextHelper.getAuthenticatedUser(serverRequest);
@@ -98,10 +86,6 @@ public class LoanRequestHandler {
                 .onErrorResume(Exception.class, this::handleGenericError);
     }
 
-    /**
-     * Lista todas las solicitudes de préstamo
-     * Solo accesible para usuarios con rol ASESOR
-     */
     public Mono<ServerResponse> getAllLoanRequests(ServerRequest serverRequest) {
         SecurityContextHelper.AuthenticatedUser authenticatedUser = 
                 SecurityContextHelper.getAuthenticatedUser(serverRequest);
@@ -124,11 +108,6 @@ public class LoanRequestHandler {
                 .onErrorResume(Exception.class, this::handleGenericError);
     }
 
-    /**
-     * Lista las solicitudes que requieren revisión manual
-     * Solo accesible para usuarios con rol ASESOR
-     * Retorna un listado paginado y filtrable de solicitudes pendientes de decisión
-     */
     public Mono<ServerResponse> getSolicitudesForReview(ServerRequest serverRequest) {
         SecurityContextHelper.AuthenticatedUser authenticatedUser = 
                 SecurityContextHelper.getAuthenticatedUser(serverRequest);
@@ -136,7 +115,6 @@ public class LoanRequestHandler {
         log.info(MessageFormatter.format(Messages.LOG_USER_ACTION, 
                 authenticatedUser.getEmail(), "consultando", "solicitudes para revisión manual"));
 
-        // Extraer parámetros de paginación
         int page = serverRequest.queryParam("page")
                 .map(Integer::parseInt)
                 .orElse(0);
@@ -148,7 +126,6 @@ public class LoanRequestHandler {
         log.info("DEBUG - Parámetros recibidos: page={}, size={}, asesor={}", 
                 page, size, authenticatedUser.getEmail());
 
-        // Obtener datos paginados y conteo total
         Mono<PagedResponse<LoanRequestReviewDTO>> pagedResponseMono = 
                 listLoanRequestsForReviewUseCase.listSolicitudesForReview(page, size, authenticatedUser.getEmail())
                         .collectList()
@@ -167,7 +144,6 @@ public class LoanRequestHandler {
                 .flatMap(pagedResponse -> {
                     String message = Messages.LOAN_REQUESTS_RETRIEVED;
                     
-                    // Agregar información adicional si la página está vacía pero hay elementos
                     if (pagedResponse.isEmpty() && pagedResponse.getTotalElements() > 0) {
                         message += MessageFormatter.format(Messages.PAGINATION_EMPTY_PAGE_INFO, 
                                 page, pagedResponse.getTotalElements(), pagedResponse.getTotalPages());
@@ -199,14 +175,9 @@ public class LoanRequestHandler {
                 .bodyValue(response);
     }
 
-    /**
-     * Procesa decisiones de aprobación/rechazo de solicitudes
-     * Solo accesible para usuarios con rol ASESOR
-     */
     public Mono<ServerResponse> processLoanDecision(ServerRequest request) {
         log.info(MessageFormatter.format(Messages.LOG_OPERATION_STARTED, "procesamiento de decisión", "solicitud de préstamo"));
 
-        // Extraer información completa del usuario autenticado
         SecurityContextHelper.AuthenticatedUser authenticatedUser = 
                 SecurityContextHelper.getAuthenticatedUser(request);
         
@@ -225,7 +196,6 @@ public class LoanRequestHandler {
                     log.debug("DEBUG - Decisión recibida: solicitudId={}, decision={}, asesor={}, asesorId={}", 
                              decision.getSolicitudId(), decision.getDecision(), asesorEmail, asesorId);
                     
-                    // Establecer tanto el email como el ID del asesor desde el token JWT
                     decision.setAsesorEmail(asesorEmail);
                 })
                 .flatMap(decision -> processLoanDecisionUseCase.processDecision(decision, asesorId))
