@@ -1,0 +1,114 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  CrediYa Notification Service
+  Lambda function que procesa decisiones de préstamos desde SQS y envía notificaciones por email via SNS
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, prod]
+    Description: Environment name
+  
+  SenderEmail:
+    Type: String
+    Default: noreply@crediya.com
+    Description: Email address for sending notifications
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: python3.9
+    Environment:
+      Variables:
+        ENVIRONMENT: !Ref Environment
+        SENDER_EMAIL: !Ref SenderEmail
+
+Resources:
+  # SQS Queue para decisiones de préstamos
+  LoanDecisionsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "loan-decisions-queue-${Environment}.fifo"
+      FifoQueue: true
+      ContentBasedDeduplication: true
+      MessageRetentionPeriod: 1209600  # 14 días
+      VisibilityTimeoutSeconds: 180
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt LoanDecisionsDeadLetterQueue.Arn
+        maxReceiveCount: 3
+
+  # Dead Letter Queue
+  LoanDecisionsDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "loan-decisions-dlq-${Environment}.fifo"
+      FifoQueue: true
+      ContentBasedDeduplication: true
+      MessageRetentionPeriod: 1209600  # 14 días
+
+  # SNS Topic para notificaciones de email
+  EmailNotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub "email-notifications-${Environment}"
+      DisplayName: "CrediYa Email Notifications"
+
+  # Lambda Function
+  NotificationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "crediya-notification-service-${Environment}"
+      CodeUri: .
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.9
+      Timeout: 30
+      MemorySize: 256
+      Environment:
+        Variables:
+          SNS_TOPIC_ARN: !Ref EmailNotificationTopic
+      Events:
+        SQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt LoanDecisionsQueue.Arn
+            BatchSize: 10
+            MaximumBatchingWindowInSeconds: 5
+      Policies:
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt EmailNotificationTopic.TopicName
+        - SQSPollerPolicy:
+            QueueName: !GetAtt LoanDecisionsQueue.QueueName
+
+  # CloudWatch Log Group
+  NotificationFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/crediya-notification-service-${Environment}"
+      RetentionInDays: 30
+
+Outputs:
+  NotificationFunctionArn:
+    Description: "ARN de la función Lambda de notificaciones"
+    Value: !GetAtt NotificationFunction.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-NotificationFunctionArn"
+
+  LoanDecisionsQueueUrl:
+    Description: "URL de la cola SQS para decisiones de préstamos"
+    Value: !Ref LoanDecisionsQueue
+    Export:
+      Name: !Sub "${AWS::StackName}-LoanDecisionsQueueUrl"
+
+  LoanDecisionsQueueArn:
+    Description: "ARN de la cola SQS para decisiones de préstamos"
+    Value: !GetAtt LoanDecisionsQueue.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-LoanDecisionsQueueArn"
+
+  EmailNotificationTopicArn:
+    Description: "ARN del tópico SNS para notificaciones de email"
+    Value: !Ref EmailNotificationTopic
+    Export:
+      Name: !Sub "${AWS::StackName}-EmailNotificationTopicArn"

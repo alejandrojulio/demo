@@ -1,0 +1,12 @@
+dependencies {
+    implementation project(':model')
+    implementation 'com.amazonaws:aws-java-sdk-sqs:1.12.565'
+    implementation 'com.amazonaws:aws-java-sdk-core:1.12.565'
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework:spring-context'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    implementation 'io.projectreactor:reactor-core'
+    
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}

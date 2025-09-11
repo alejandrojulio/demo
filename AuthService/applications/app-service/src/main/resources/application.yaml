@@ -18,11 +18,25 @@ management:
         enabled: true
 cors:
   allowed-origins: "http://localhost:4200,http://localhost:8080"
+
+# Configuración JWT
+jwt:
+  secret: "myDefaultSecretKeyForCrediYaApplicationThatIsLongEnoughToMeetSecurityRequirements"
+  expiration: 24
+
+# Configuración de logging para debugging
+logging:
+  level:
+    co.com.pragma.usecase.auth: DEBUG
+    co.com.pragma.jwt: DEBUG
+    co.com.pragma.api.config: DEBUG
+    org.springframework.security: DEBUG
+
 adapters:
   r2dbc:
     host: localhost
     port: 5432
-    database: demo
+    database: crediya_db
     schema: public
     username: postgres
     password: "123"
