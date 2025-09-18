@@ -20,11 +20,8 @@ public interface LoanRequestReviewProjection {
     String getClientDocument();
     String getNotes();
     
-    // Datos del usuario (JOIN)
-    String getEmail();
-    String getFirstName();
-    String getLastName();
-    BigDecimal getBaseSalary();
+    // Datos del usuario ahora se obtienen vía AuthService HTTP API
+    // Los métodos de usuario fueron removidos - usar AuthServiceUserDataClient
     
     // Campos calculados
     BigDecimal getInterestRate();

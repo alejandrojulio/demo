@@ -4,9 +4,9 @@ package co.com.pragma.model.user;
  * Enumeración que define los roles de usuarios en el sistema CrediYa
  */
 public enum UserRole {
-    ADMINISTRADOR("Administrador"),
-    ASESOR("Asesor"),
-    CLIENTE("Cliente");
+    ADMIN("Administrador"),
+    ADVISOR("Asesor"),
+    CLIENT("Cliente");
 
     private final String displayName;
 

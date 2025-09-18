@@ -80,16 +80,32 @@ public class SecurityContextHelper {
             return this.role != null && this.role.equalsIgnoreCase(role);
         }
 
+        public boolean isClient() {
+            return hasRole("CLIENT");
+        }
+
+        public boolean isAdvisor() {
+            return hasRole("ADVISOR");
+        }
+
+        public boolean isAdmin() {
+            return hasRole("ADMIN");
+        }
+
+        // Métodos legacy para compatibilidad
+        @Deprecated
         public boolean isCliente() {
-            return hasRole("CLIENTE");
+            return isClient();
         }
 
+        @Deprecated
         public boolean isAsesor() {
-            return hasRole("ASESOR");
+            return isAdvisor();
         }
 
+        @Deprecated
         public boolean isAdministrador() {
-            return hasRole("ADMINISTRADOR");
+            return isAdmin();
         }
     }
 }

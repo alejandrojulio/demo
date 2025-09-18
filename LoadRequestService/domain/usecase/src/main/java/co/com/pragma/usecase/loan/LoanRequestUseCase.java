@@ -6,6 +6,9 @@ import co.com.pragma.model.loan.LoanRequest;
 import co.com.pragma.model.loan.LoanRequestDTO;
 import co.com.pragma.model.loan.gateways.LoanApplicationLogger;
 import co.com.pragma.model.loan.gateways.LoanRequestRepository;
+import co.com.pragma.model.loantype.LoanType;
+import co.com.pragma.model.loantype.gateways.LoanTypeRepository;
+import co.com.pragma.model.debtcapacity.gateways.DebtCapacityGateway;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -17,6 +20,8 @@ public class LoanRequestUseCase {
 
     private final LoanRequestRepository loanRequestRepository;
     private final LoanApplicationLogger logger;
+    private final LoanTypeRepository loanTypeRepository;
+    private final DebtCapacityGateway debtCapacityGateway;
 
     private static final BigDecimal MIN_LOAN_AMOUNT = new BigDecimal("100000");
     private static final BigDecimal MAX_LOAN_AMOUNT = new BigDecimal("50000000");
@@ -24,9 +29,13 @@ public class LoanRequestUseCase {
     private static final Integer MAX_LOAN_TERM = 120;
 
     public LoanRequestUseCase(LoanRequestRepository loanRequestRepository, 
-                             LoanApplicationLogger logger) {
+                             LoanApplicationLogger logger,
+                             LoanTypeRepository loanTypeRepository,
+                             DebtCapacityGateway debtCapacityGateway) {
         this.loanRequestRepository = loanRequestRepository;
         this.logger = logger;
+        this.loanTypeRepository = loanTypeRepository;
+        this.debtCapacityGateway = debtCapacityGateway;
     }
 
     @Transactional
@@ -43,6 +52,7 @@ public class LoanRequestUseCase {
                 .map(this::enrichLoanRequestData)
                 .doOnNext(loanRequest -> logger.info(MessageFormatter.format(Messages.LOG_SAVING_LOAN_REQUEST, loanRequest.getClientDocumentId())))
                 .flatMap(loanRequestRepository::save)
+                .flatMap(this::processAutomaticValidationIfRequired)
                 .doOnSuccess(savedLoanRequest -> logger.info(MessageFormatter.format(Messages.LOG_LOAN_REQUEST_CREATED_SUCCESS, savedLoanRequest.getId())))
                 .doOnError(error -> logger.error(MessageFormatter.format(Messages.LOG_ERROR_CREATING_LOAN_REQUEST, loanRequestDTO.getClientDocumentId()), error));
     }
@@ -169,5 +179,52 @@ public class LoanRequestUseCase {
                 .doOnNext(loanRequest -> logger.warn("Solicitud encontrada: {} para cliente: {}", "test"))
                 .doOnComplete(() -> logger.info("Consulta de todas las solicitudes completada"))
                 .doOnError(error -> logger.error("Error obteniendo todas las solicitudes", error));
+    }
+    
+    /**
+     * Procesa la validación automática si el tipo de préstamo lo requiere
+     */
+    private Mono<LoanRequest> processAutomaticValidationIfRequired(LoanRequest savedLoanRequest) {
+        logger.info("Verificando si la solicitud {} requiere validación automática", savedLoanRequest.getId());
+        
+        // Convertir el enum de LoanRequest a LoanType.LoanTypeCode
+        LoanType.LoanTypeCode typeCode = mapToLoanTypeCode(savedLoanRequest.getLoanType());
+        
+        return loanTypeRepository.requiresAutomaticValidation(typeCode)
+                .flatMap(requiresValidation -> {
+                    if (requiresValidation) {
+                        logger.info("Solicitud {} requiere validación automática. Enviando a cola SQS", savedLoanRequest.getId());
+                        return debtCapacityGateway.sendForAutomaticValidation(savedLoanRequest.getId())
+                                .map(sent -> {
+                                    if (sent) {
+                                        logger.info("Solicitud {} enviada exitosamente para validación automática", savedLoanRequest.getId());
+                                    } else {
+                                        logger.warn("Error enviando solicitud {} para validación automática", savedLoanRequest.getId());
+                                    }
+                                    return savedLoanRequest;
+                                });
+                    } else {
+                        logger.info("Solicitud {} no requiere validación automática. Permanece en estado PENDING_REVIEW", savedLoanRequest.getId());
+                        return Mono.just(savedLoanRequest);
+                    }
+                })
+                .onErrorResume(error -> {
+                    logger.error("Error procesando validación automática para solicitud " + savedLoanRequest.getId() + ": " + error.getMessage(), error);
+                    // En caso de error, devolver la solicitud sin validación automática
+                    return Mono.just(savedLoanRequest);
+                });
+    }
+    
+    /**
+     * Mapea el enum de LoanRequest.LoanType a LoanType.LoanTypeCode
+     */
+    private LoanType.LoanTypeCode mapToLoanTypeCode(LoanRequest.LoanType loanType) {
+        switch (loanType) {
+            case PERSONAL: return LoanType.LoanTypeCode.PERSONAL;
+            case VEHICLE: return LoanType.LoanTypeCode.VEHICLE;
+            case HOME: return LoanType.LoanTypeCode.HOME;
+            case BUSINESS: return LoanType.LoanTypeCode.BUSINESS;
+            default: throw new IllegalArgumentException("Tipo de préstamo no válido: " + loanType);
+        }
     }
 }

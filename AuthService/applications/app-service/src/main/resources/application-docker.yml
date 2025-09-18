@@ -5,11 +5,11 @@ spring:
   application:
     name: "AuthService"
   
-  # Configuración R2DBC para contenedor
+  # Configuración R2DBC para contenedor - AuthService apunta a auth_db
   r2dbc:
-    url: ${SPRING_R2DBC_URL:r2dbc:mysql://mysql-crediya:3306/crediya_db}
-    username: ${SPRING_R2DBC_USERNAME:crediya_user}
-    password: ${SPRING_R2DBC_PASSWORD:crediya_pass}
+    url: ${SPRING_R2DBC_URL:r2dbc:mysql://mysql-auth:3306/auth_db}
+    username: ${SPRING_R2DBC_USERNAME:auth_user}
+    password: ${SPRING_R2DBC_PASSWORD:auth_pass}
     pool:
       enabled: ${SPRING_R2DBC_POOL_ENABLED:true}
       initial-size: ${SPRING_R2DBC_POOL_INITIAL_SIZE:5}

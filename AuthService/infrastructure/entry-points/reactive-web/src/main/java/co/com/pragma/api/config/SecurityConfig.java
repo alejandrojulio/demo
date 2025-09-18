@@ -37,7 +37,9 @@ public class SecurityConfig {
                         .pathMatchers("/api/v1/login", "/api/v1/auth/validate-token").permitAll()
                         .pathMatchers("/actuator/**", "/health").permitAll()
                         .pathMatchers(HttpMethod.POST, "/api/v1/users").permitAll() // Crear usuario público
-                        .pathMatchers("/api/v1/users/**").authenticated()
+                        // Endpoints para comunicación entre microservicios (manejados por filtro personalizado)
+                        .pathMatchers("/api/v1/users/document/**", "/api/v1/users/email/**", "/api/v1/users/validate/**").permitAll()
+                        .pathMatchers("/api/v1/users/**").authenticated() // Otros endpoints de usuarios requieren autenticación
                         .anyExchange().authenticated()
                 )
                 .addFilterAt(authenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)

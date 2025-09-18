@@ -12,6 +12,7 @@ import co.com.pragma.model.loan.LoanRequestReviewDTO;
 import co.com.pragma.usecase.loan.LoanRequestUseCase;
 import co.com.pragma.usecase.loan.ListLoanRequestsForReviewUseCase;
 import co.com.pragma.usecase.loan.ProcessLoanDecisionUseCase;
+import co.com.pragma.usecase.loan.UpdateLoanStatusUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,7 @@ public class LoanRequestHandler {
     private final LoanRequestUseCase loanRequestUseCase;
     private final ListLoanRequestsForReviewUseCase listLoanRequestsForReviewUseCase;
     private final ProcessLoanDecisionUseCase processLoanDecisionUseCase;
+    private final UpdateLoanStatusUseCase updateLoanStatusUseCase;
 
     public Mono<ServerResponse> createLoanRequest(ServerRequest serverRequest) {
         SecurityContextHelper.AuthenticatedUser authenticatedUser = 
@@ -215,5 +217,67 @@ public class LoanRequestHandler {
                     return ServerResponse.status(HttpStatus.CONFLICT).bodyValue(response);
                 })
                 .onErrorResume(Exception.class, this::handleGenericError);
+    }
+
+    /**
+     * Endpoint para actualizar estado de solicitud (usado por la Lambda de capacidad)
+     */
+    public Mono<ServerResponse> updateLoanStatus(ServerRequest serverRequest) {
+        log.info("Recibiendo actualización de estado de solicitud desde Lambda");
+
+        String loanRequestId = serverRequest.pathVariable("id");
+        
+        return serverRequest.bodyToMono(LoanStatusUpdateDTO.class)
+                .flatMap(updateRequest -> {
+                    log.info("Actualizando solicitud {} a estado {}: {}", 
+                             loanRequestId, updateRequest.getNewStatus(), updateRequest.getReason());
+                    
+                    return updateLoanStatusUseCase.updateLoanStatus(
+                            Long.valueOf(loanRequestId), 
+                            updateRequest.getNewStatus(), 
+                            updateRequest.getReason()
+                    );
+                })
+                .flatMap(updatedLoan -> {
+                    ApiResponse<LoanRequest> response = ApiResponse.success(
+                            updatedLoan,
+                            MessageFormatter.format(Messages.OPERATION_SUCCESS_UPDATED, "Estado de solicitud")
+                    );
+                    return ServerResponse.ok().bodyValue(response);
+                })
+                .onErrorResume(IllegalArgumentException.class, this::handleValidationError)
+                .onErrorResume(IllegalStateException.class, error -> {
+                    ApiResponse<String> response = ApiResponse.error(
+                            "Cambio de estado inválido: " + error.getMessage()
+                    );
+                    return ServerResponse.status(HttpStatus.CONFLICT).bodyValue(response);
+                })
+                .onErrorResume(Exception.class, this::handleGenericError);
+    }
+
+    /**
+     * DTO para recibir actualizaciones de estado
+     */
+    public static class LoanStatusUpdateDTO {
+        private String newStatus;
+        private String reason;
+        private String source;
+
+        public LoanStatusUpdateDTO() {}
+
+        public LoanStatusUpdateDTO(String newStatus, String reason, String source) {
+            this.newStatus = newStatus;
+            this.reason = reason;
+            this.source = source;
+        }
+
+        public String getNewStatus() { return newStatus; }
+        public void setNewStatus(String newStatus) { this.newStatus = newStatus; }
+
+        public String getReason() { return reason; }
+        public void setReason(String reason) { this.reason = reason; }
+
+        public String getSource() { return source; }
+        public void setSource(String source) { this.source = source; }
     }
 }

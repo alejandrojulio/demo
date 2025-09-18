@@ -5,41 +5,59 @@ import co.com.pragma.model.user.UserRole;
 
 public class RoleMapper {
     
-    public static UserRole roleIdToUserRole(Integer roleId) {
-        if (roleId == null) {
-            return UserRole.CLIENTE;
-        }
-        
-        return switch (roleId) {
-            case 1 -> UserRole.ADMINISTRADOR;
-            case 2 -> UserRole.ASESOR;
-            case 3 -> UserRole.CLIENTE;
-            default -> UserRole.CLIENTE;
-        };
-    }
-    
-    public static Integer userRoleToRoleId(UserRole userRole) {
-        if (userRole == null) {
-            return 3; // Default: CLIENTE
-        }
-        
-        return switch (userRole) {
-            case ADMINISTRADOR -> 1;
-            case ASESOR -> 2;
-            case CLIENTE -> 3;
-        };
-    }
-
+    /**
+     * Convierte un string de rol de BD directamente a UserRole
+     * Ahora que tenemos una columna role directa, este es el método principal
+     */
     public static UserRole roleNameToUserRole(String roleName) {
         if (roleName == null) {
-            return UserRole.CLIENTE;
+            return UserRole.CLIENT;
         }
         
         return switch (roleName.toUpperCase()) {
-            case "ADMINISTRADOR" -> UserRole.ADMINISTRADOR;
-            case "ASESOR" -> UserRole.ASESOR;
-            case "CLIENTE" -> UserRole.CLIENTE;
-            default -> UserRole.CLIENTE;
+            case "ADMIN", "ADMINISTRADOR" -> UserRole.ADMIN;
+            case "ADVISOR", "ASESOR" -> UserRole.ADVISOR;
+            case "CLIENT", "CLIENTE" -> UserRole.CLIENT;
+            default -> UserRole.CLIENT;
+        };
+    }
+
+    /**
+     * Convierte UserRole a string para la BD
+     */
+    public static String userRoleToRoleName(UserRole userRole) {
+        if (userRole == null) {
+            return "CLIENT";
+        }
+        
+        return userRole.name(); // Devuelve ADMIN, ADVISOR, o CLIENT
+    }
+
+    // Métodos legacy mantenidos para compatibilidad pero ya no se usan
+    @Deprecated
+    public static UserRole roleIdToUserRole(Integer roleId) {
+        if (roleId == null) {
+            return UserRole.CLIENT;
+        }
+        
+        return switch (roleId) {
+            case 1 -> UserRole.ADMIN;
+            case 2 -> UserRole.ADVISOR;
+            case 3 -> UserRole.CLIENT;
+            default -> UserRole.CLIENT;
+        };
+    }
+    
+    @Deprecated
+    public static Integer userRoleToRoleId(UserRole userRole) {
+        if (userRole == null) {
+            return 3; // Default: CLIENT
+        }
+        
+        return switch (userRole) {
+            case ADMIN -> 1;
+            case ADVISOR -> 2;
+            case CLIENT -> 3;
         };
     }
 }

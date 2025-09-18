@@ -191,16 +191,30 @@ public final class TestDataBuilder {
 
     public static class SecurityContextBuilder {
         public static final String ADMIN_EMAIL = "admin@crediya.com";
-        public static final String ASESOR_EMAIL = "asesor@crediya.com";
-        public static final String CLIENTE_EMAIL = "cliente@crediya.com";
+        public static final String ADVISOR_EMAIL = "asesor@crediya.com";
+        public static final String CLIENT_EMAIL = "cliente@crediya.com";
         
-        public static final String ADMIN_ROLE = "ADMINISTRADOR";
-        public static final String ASESOR_ROLE = "ASESOR";
-        public static final String CLIENTE_ROLE = "CLIENTE";
+        public static final String ADMIN_ROLE = "ADMIN";
+        public static final String ADVISOR_ROLE = "ADVISOR";
+        public static final String CLIENT_ROLE = "CLIENT";
         
         public static final String ADMIN_DOCUMENT = "admin001";
-        public static final String ASESOR_DOCUMENT = "asesor001";
-        public static final String CLIENTE_DOCUMENT = "12345678";
+        public static final String ADVISOR_DOCUMENT = "asesor001";
+        public static final String CLIENT_DOCUMENT = "12345678";
+
+        // Constantes legacy para compatibilidad
+        @Deprecated
+        public static final String ASESOR_EMAIL = ADVISOR_EMAIL;
+        @Deprecated
+        public static final String CLIENTE_EMAIL = CLIENT_EMAIL;
+        @Deprecated
+        public static final String ASESOR_ROLE = "ASESOR";
+        @Deprecated
+        public static final String CLIENTE_ROLE = "CLIENTE";
+        @Deprecated
+        public static final String ASESOR_DOCUMENT = ADVISOR_DOCUMENT;
+        @Deprecated
+        public static final String CLIENTE_DOCUMENT = CLIENT_DOCUMENT;
     }
 
     // ==========================================

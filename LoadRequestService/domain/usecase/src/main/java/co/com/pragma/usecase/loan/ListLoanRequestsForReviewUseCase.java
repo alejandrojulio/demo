@@ -4,6 +4,7 @@ import co.com.pragma.model.loan.LoanRequest;
 import co.com.pragma.model.loan.LoanRequestReviewDTO;
 import co.com.pragma.model.loan.gateways.LoanApplicationLogger;
 import co.com.pragma.model.loan.gateways.LoanRequestRepository;
+import co.com.pragma.model.user.gateways.UserDataGateway;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -13,12 +14,13 @@ import java.util.function.Predicate;
 
 /**
  * Caso de uso para listar solicitudes que requieren revisión manual
- * Solo accesible para usuarios con rol ASESOR
+ * Solo accesible para usuarios con rol ADVISOR
  */
 public class ListLoanRequestsForReviewUseCase {
 
     private final LoanRequestRepository loanRequestRepository;
     private final LoanApplicationLogger logger;
+    private final UserDataGateway userDataGateway;
 
     // Estados que requieren revisión manual - Inmutable
     private static final List<String> ESTADOS_REVISION_MANUAL = List.of(
@@ -36,9 +38,11 @@ public class ListLoanRequestsForReviewUseCase {
         message -> new IllegalArgumentException(message);
 
     public ListLoanRequestsForReviewUseCase(LoanRequestRepository loanRequestRepository,
-                                          LoanApplicationLogger logger) {
+                                          LoanApplicationLogger logger,
+                                          UserDataGateway userDataGateway) {
         this.loanRequestRepository = loanRequestRepository;
         this.logger = logger;
+        this.userDataGateway = userDataGateway;
     }
 
     /**
@@ -80,9 +84,26 @@ public class ListLoanRequestsForReviewUseCase {
 
     /**
      * Ejecución funcional de la consulta
+     * Obtiene datos de solicitudes y los enriquece con datos de usuario del AuthService
      */
     private Flux<LoanRequestReviewDTO> executeQuery(int page, int size, String userEmail) {
-        return loanRequestRepository.findSolicitudesForManualReview(page, size, ESTADOS_REVISION_MANUAL);
+        return loanRequestRepository.findSolicitudesForManualReview(page, size, ESTADOS_REVISION_MANUAL)
+                .flatMap(this::enrichWithUserData);
+    }
+
+    /**
+     * Enriquece un DTO de solicitud con datos de usuario obtenidos del AuthService
+     */
+    private Mono<LoanRequestReviewDTO> enrichWithUserData(LoanRequestReviewDTO dto) {
+        return userDataGateway.getUserByDocument(dto.getDocumentoCliente())
+                .map(userData -> dto.toBuilder()
+                        .email(userData.getEmail())
+                        .nombre(userData.getFirstName() + " " + userData.getLastName())
+                        .salarioBase(userData.getBaseSalary())
+                        .build())
+                .onErrorReturn(dto) // Si falla obtener datos del usuario, devolver DTO original
+                .doOnError(error -> logger.warn("Error obteniendo datos de usuario para documento {}: {}", 
+                        dto.getDocumentoCliente(), error.getMessage()));
     }
 
     /**

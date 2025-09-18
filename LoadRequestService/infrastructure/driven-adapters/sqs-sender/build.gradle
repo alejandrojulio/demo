@@ -1,0 +1,29 @@
+dependencies {
+    implementation project(':model')
+    implementation project(':usecase')
+    
+    // Spring Boot Starter
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springframework:spring-context'
+    
+    // AWS SDK v2
+    implementation 'software.amazon.awssdk:sqs:2.20.162'
+    implementation 'software.amazon.awssdk:netty-nio-client:2.20.162'
+    
+    // Jackson for JSON processing
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    
+    // Reactive streams
+    implementation 'io.projectreactor:reactor-core'
+    
+    // Spring Data R2DBC for entity template
+    implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
+    
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    
+    // Logging
+    implementation 'org.slf4j:slf4j-api'
+}

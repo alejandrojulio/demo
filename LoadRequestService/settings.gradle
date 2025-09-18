@@ -30,5 +30,9 @@ include ':metrics'
 project(':metrics').projectDir = file('./infrastructure/helpers/metrics')
 include ':sqs-sender'
 project(':sqs-sender').projectDir = file('./infrastructure/driven-adapters/sqs-sender')
+include ':sqs-listener'
+project(':sqs-listener').projectDir = file('./infrastructure/driven-adapters/sqs-listener')
 include ':aws-sqs'
 project(':aws-sqs').projectDir = file('./infrastructure/driven-adapters/aws-sqs')
+include ':auth-client'
+project(':auth-client').projectDir = file('./infrastructure/driven-adapters/auth-client')

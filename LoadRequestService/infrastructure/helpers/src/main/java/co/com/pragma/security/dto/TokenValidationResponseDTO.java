@@ -22,9 +22,9 @@ public class TokenValidationResponseDTO {
  * Enum que debe coincidir exactamente con el del AuthService
  */
 enum UserRole {
-    ADMINISTRADOR("Administrador"),
-    ASESOR("Asesor"),
-    CLIENTE("Cliente");
+    ADMIN("Administrador"),
+    ADVISOR("Asesor"),
+    CLIENT("Cliente");
     
     private final String displayName;
     
@@ -39,6 +39,6 @@ enum UserRole {
     // Sobrescribir toString para que coincida con AuthService
     @Override
     public String toString() {
-        return this.name(); // Devuelve ADMINISTRADOR, ASESOR, CLIENTE
+        return this.name(); // Devuelve ADMIN, ADVISOR, CLIENT
     }
 }

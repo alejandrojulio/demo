@@ -44,6 +44,12 @@ public class JwtAuthenticationFilter implements WebFilter {
             log.info("Ruta pública, permitiendo acceso sin autenticación: {}", path);
             return chain.filter(exchange);
         }
+        
+        // Verificar si es una llamada de servicio interno
+        if (isInternalServiceCall(request)) {
+            log.info("Llamada de servicio interno autenticada: {} {}", method, path);
+            return chain.filter(exchange);
+        }
 
         String token = extractTokenFromRequest(request);
         if (token == null) {
@@ -112,6 +118,20 @@ public class JwtAuthenticationFilter implements WebFilter {
                path.matches("/docs/.*") ||
                path.matches("/swagger-ui/.*");
     }
+    
+    private boolean isInternalServiceCall(ServerHttpRequest request) {
+        // Verificar si es una llamada de servicio interno
+        String internalHeader = request.getHeaders().getFirst("X-Internal-Service");
+        String authHeader = request.getHeaders().getFirst("Authorization");
+        
+        if (internalHeader != null && authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            String expectedToken = System.getProperty("INTERNAL_SERVICE_TOKEN", "CrediYaInternalService2025SecureToken");
+            return expectedToken.equals(token);
+        }
+        
+        return false;
+    }
 
     private boolean hasPermission(String path, String method, TokenValidationResponseDTO tokenResponse) {
         String role = tokenResponse.getRole() != null ? String.valueOf(tokenResponse.getRole()) : "UNKNOWN";
@@ -121,7 +141,7 @@ public class JwtAuthenticationFilter implements WebFilter {
         if (path.matches("/api/v1/solicitud.*")) {
             switch (method) {
                 case "POST": // Creación de solicitud
-                    if (!"CLIENTE".equals(role)) {
+                    if (!"CLIENT".equals(role)) {
                         return false;
                     }
                     // Validación adicional: el cliente solo puede crear solicitudes para sí mismo
@@ -129,10 +149,10 @@ public class JwtAuthenticationFilter implements WebFilter {
                     return true;
 
                 case "PUT": // Actualización de solicitud
-                    return "ASESOR".equals(role);
+                    return "ADVISOR".equals(role);
 
                 case "GET": // Listado de solicitudes
-                    return "ASESOR".equals(role);
+                    return "ADVISOR".equals(role);
 
                 default:
                     return false;

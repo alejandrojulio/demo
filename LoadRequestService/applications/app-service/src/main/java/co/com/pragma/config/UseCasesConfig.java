@@ -3,9 +3,13 @@ package co.com.pragma.config;
 import co.com.pragma.model.loan.gateways.LoanApplicationLogger;
 import co.com.pragma.model.loan.gateways.LoanRequestRepository;
 import co.com.pragma.model.notification.gateways.NotificationGateway;
+import co.com.pragma.model.loantype.gateways.LoanTypeRepository;
+import co.com.pragma.model.debtcapacity.gateways.DebtCapacityGateway;
+import co.com.pragma.model.user.gateways.UserDataGateway;
 import co.com.pragma.usecase.loan.ListLoanRequestsForReviewUseCase;
 import co.com.pragma.usecase.loan.LoanRequestUseCase;
 import co.com.pragma.usecase.loan.ProcessLoanDecisionUseCase;
+import co.com.pragma.usecase.loan.UpdateLoanStatusUseCase;
 import co.com.pragma.usecase.notification.NotificationService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,15 +20,18 @@ public class UseCasesConfig {
     @Bean
     public LoanRequestUseCase loanRequestUseCase(
             LoanRequestRepository loanRequestRepository,
-            LoanApplicationLogger logger) {
-        return new LoanRequestUseCase(loanRequestRepository, logger);
+            LoanApplicationLogger logger,
+            LoanTypeRepository loanTypeRepository,
+            DebtCapacityGateway debtCapacityGateway) {
+        return new LoanRequestUseCase(loanRequestRepository, logger, loanTypeRepository, debtCapacityGateway);
     }
 
     @Bean
     public ListLoanRequestsForReviewUseCase listLoanRequestsForReviewUseCase(
             LoanRequestRepository loanRequestRepository,
-            LoanApplicationLogger logger) {
-        return new ListLoanRequestsForReviewUseCase(loanRequestRepository, logger);
+            LoanApplicationLogger logger,
+            UserDataGateway userDataGateway) {
+        return new ListLoanRequestsForReviewUseCase(loanRequestRepository, logger, userDataGateway);
     }
 
     @Bean
@@ -41,5 +48,12 @@ public class UseCasesConfig {
             LoanApplicationLogger logger,
             NotificationService notificationService) {
         return new ProcessLoanDecisionUseCase(loanRequestRepository, logger, notificationService);
+    }
+
+    @Bean
+    public UpdateLoanStatusUseCase updateLoanStatusUseCase(
+            LoanRequestRepository loanRequestRepository,
+            LoanApplicationLogger logger) {
+        return new UpdateLoanStatusUseCase(loanRequestRepository, logger);
     }
 }

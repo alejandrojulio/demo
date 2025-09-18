@@ -9,29 +9,30 @@ version: '3.8'
 services:
 
   # ========================================
-  # BASE DE DATOS - MySQL Única para CrediYa
+  # BASE DE DATOS SEPARADAS
   # ========================================
-  mysql-crediya:
+  
+  # Base de datos para AuthService
+  mysql-auth:
     image: mysql:8.0
-    container_name: crediya-mysql
+    container_name: crediya-mysql-auth
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: root_password_2025
-      MYSQL_DATABASE: crediya_db
-      MYSQL_USER: crediya_user
-      MYSQL_PASSWORD: crediya_pass
+      MYSQL_DATABASE: auth_db
+      MYSQL_USER: auth_user
+      MYSQL_PASSWORD: auth_pass
       MYSQL_CHARSET: utf8mb4
       MYSQL_COLLATION: utf8mb4_unicode_ci
     ports:
-      - "3307:3306"
+      - "3306:3306"
     volumes:
-      - mysql_crediya_data:/var/lib/mysql
-      - ./database/schema-init.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
-      - ./database/data-init.sql:/docker-entrypoint-initdb.d/02-data.sql:ro
+      - mysql_auth_data:/var/lib/mysql
+      - ./database/auth-schema-init.sql:/docker-entrypoint-initdb.d/01-auth-schema.sql:ro
     networks:
       - crediya-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "crediya_user", "-pcrediya_pass"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "auth_user", "-pauth_pass"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -40,7 +41,38 @@ services:
       --default-authentication-plugin=mysql_native_password
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_unicode_ci
-      --innodb-buffer-pool-size=512M
+      --innodb-buffer-pool-size=256M
+
+  # Base de datos para LoadRequestService  
+  mysql-loans:
+    image: mysql:8.0
+    container_name: crediya-mysql-loans
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_2025
+      MYSQL_DATABASE: loans_db
+      MYSQL_USER: loans_user
+      MYSQL_PASSWORD: loans_pass
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_unicode_ci
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_loans_data:/var/lib/mysql
+      - ./database/loans-schema-init.sql:/docker-entrypoint-initdb.d/01-loans-schema.sql:ro
+    networks:
+      - crediya-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "loans_user", "-ploans_pass"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --innodb-buffer-pool-size=256M
 
   # ========================================
   # MICROSERVICIO - Autenticación
@@ -53,9 +85,9 @@ services:
     restart: unless-stopped
     environment:
       # Configuración de Base de Datos
-      SPRING_R2DBC_URL: r2dbc:mysql://mysql-crediya:3306/crediya_db
-      SPRING_R2DBC_USERNAME: crediya_user
-      SPRING_R2DBC_PASSWORD: crediya_pass
+      SPRING_R2DBC_URL: r2dbc:mysql://mysql-auth:3306/auth_db
+      SPRING_R2DBC_USERNAME: auth_user
+      SPRING_R2DBC_PASSWORD: auth_pass
       
       # Configuración del Servidor
       SERVER_PORT: 8080
@@ -64,6 +96,9 @@ services:
       # Configuración JWT
       JWT_SECRET: CrediYa2025SecretKeyForJWTTokensVerySecureAndLong123456789
       JWT_EXPIRATION: 3600000
+      
+      # Token para comunicación entre servicios
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-CrediYaInternalService2025SecureToken}
       
       # Configuración de Logs
       LOGGING_LEVEL_CO_COM_PRAGMA: DEBUG
@@ -86,7 +121,7 @@ services:
     networks:
       - crediya-network
     depends_on:
-      mysql-crediya:
+      mysql-auth:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
@@ -106,9 +141,9 @@ services:
     restart: unless-stopped
     environment:
       # Configuración de Base de Datos
-      SPRING_R2DBC_URL: r2dbc:mysql://mysql-crediya:3306/crediya_db
-      SPRING_R2DBC_USERNAME: crediya_user
-      SPRING_R2DBC_PASSWORD: crediya_pass
+      SPRING_R2DBC_URL: r2dbc:mysql://mysql-loans:3306/loans_db
+      SPRING_R2DBC_USERNAME: loans_user
+      SPRING_R2DBC_PASSWORD: loans_pass
       
       # Configuración del Servidor
       SERVER_PORT: 8081
@@ -121,8 +156,13 @@ services:
       CORS_ALLOWED_ORIGINS: http://localhost:4200,http://localhost:8080,http://localhost:8081
       AWS_REGION: ${AWS_REGION:-us-east-2}
       AWS_SQS_QUEUE_URL: ${AWS_SQS_QUEUE_URL:-https://sqs.us-east-2.amazonaws.com/882309621524/sqs_notificaciones}
+      AWS_SQS_DEBT_CAPACITY_QUEUE_URL: ${AWS_SQS_DEBT_CAPACITY_QUEUE_URL:-https://sqs.us-east-2.amazonaws.com/882309621524/sqs_capacidad}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      
+      # Token para comunicación entre servicios
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-CrediYaInternalService2025SecureToken}
+      
       LOGGING_LEVEL_CO_COM_PRAGMA: DEBUG
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_R2DBC: DEBUG
       
@@ -143,7 +183,7 @@ services:
     networks:
       - crediya-network
     depends_on:
-      mysql-crediya:
+      mysql-loans:
         condition: service_healthy
       auth-service:
         condition: service_healthy
@@ -158,10 +198,14 @@ services:
 # VOLÚMENES PERSISTENTES
 # ========================================
 volumes:
-  # Datos de la base de datos única (persistente)
-  mysql_crediya_data:
+  # Datos de las bases de datos separadas (persistentes)
+  mysql_auth_data:
     driver: local
-    name: crediya_mysql_data
+    name: crediya_mysql_auth_data
+  
+  mysql_loans_data:
+    driver: local
+    name: crediya_mysql_loans_data
   
   # Logs de las aplicaciones
   auth_logs:
