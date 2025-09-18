@@ -17,26 +17,41 @@ public final class LoanRequestReviewMapper {
 
     /**
      * Función pura para mapear projection a DTO
-     * NOTA: Los datos de usuario (email, nombre, salario) ahora se obtienen vía AuthService HTTP API
-     * Este mapper crea DTOs con valores temporales que serán enriquecidos en el use case
+     * Inmutable, sin side effects, composable
      */
     public static final Function<LoanRequestReviewProjection, LoanRequestReviewDTO> toDTO = 
         projection -> LoanRequestReviewDTO.builder()
             .id(projection.getId())
             .monto(projection.getAmount())
             .plazo(projection.getTermInMonths())
-            .email("") // Se obtendrá vía AuthService
-            .nombre("") // Se obtendrá vía AuthService
+            .email(projection.getEmail())
+            .nombre(buildFullName(projection.getFirstName(), projection.getLastName()))
             .tipoPrestamo(projection.getLoanType())
             .tasaInteres(projection.getInterestRate())
             .estadoSolicitud(projection.getStatus())
             .fechaCreacion(projection.getCreatedAt())
             .fechaActualizacion(projection.getUpdatedAt())
-            .salarioBase(java.math.BigDecimal.ZERO) // Se obtendrá vía AuthService
+            .salarioBase(projection.getBaseSalary())
             .deudaTotalMensualSolicitudesAprobadas(projection.getMonthlyDebt())
             .documentoCliente(projection.getClientDocument())
             .notas(projection.getNotes())
             .build();
 
-    // Funciones auxiliares eliminadas - Los datos de usuario ahora se obtienen vía AuthService
+    /**
+     * Función pura para construir nombre completo
+     * Maneja casos null/empty de forma funcional
+     */
+    private static String buildFullName(String firstName, String lastName) {
+        return String.join(" ", 
+            nullToEmpty(firstName), 
+            nullToEmpty(lastName)
+        ).trim();
+    }
+
+    /**
+     * Función auxiliar pura para manejo de nulls
+     */
+    private static String nullToEmpty(String value) {
+        return value != null ? value : "";
+    }
 }

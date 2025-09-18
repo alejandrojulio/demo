@@ -33,6 +33,10 @@ public interface LoanRequestReactiveRepository extends ReactiveCrudRepository<Lo
             lr.updated_at as updatedAt,
             lr.client_document as clientDocument,
             COALESCE(lr.notes, '') as notes,
+            COALESCE(u.email, '') as email,
+            COALESCE(u.first_name, '') as firstName,
+            COALESCE(u.last_name, '') as lastName,
+            COALESCE(u.base_salary, 0) as baseSalary,
             CASE 
                 WHEN lr.loan_type = 'PERSONAL' THEN 15.5
                 WHEN lr.loan_type = 'VEHICLE' THEN 12.8
@@ -47,6 +51,7 @@ public interface LoanRequestReactiveRepository extends ReactiveCrudRepository<Lo
                  AND deuda.status = 'APPROVED'), 0
             ) as monthlyDebt
         FROM loan_requests lr
+        LEFT JOIN users u ON lr.client_document = u.document
         WHERE lr.status IN ('PENDING_REVIEW', 'REJECTED', 'MANUAL_REVIEW')
         ORDER BY lr.created_at DESC
         LIMIT :#{#pageable.pageSize} OFFSET :#{#pageable.offset}
@@ -59,6 +64,7 @@ public interface LoanRequestReactiveRepository extends ReactiveCrudRepository<Lo
     @Query("""
         SELECT COUNT(*) 
         FROM loan_requests lr
+        LEFT JOIN users u ON lr.client_document = u.document
         WHERE lr.status IN ('PENDING_REVIEW', 'REJECTED', 'MANUAL_REVIEW')
         """)
     Mono<Long> countSolicitudesForManualReview();

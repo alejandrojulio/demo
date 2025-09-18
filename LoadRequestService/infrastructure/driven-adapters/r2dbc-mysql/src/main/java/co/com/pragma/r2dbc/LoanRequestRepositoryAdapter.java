@@ -75,8 +75,13 @@ public class LoanRequestRepositoryAdapter extends ReactiveAdapterOperations<
                 lr.created_at,
                 lr.updated_at,
                 lr.client_document,
-                COALESCE(lr.notes, '') as notes
+                COALESCE(lr.notes, '') as notes,
+                COALESCE(u.email, '') as email,
+                COALESCE(u.first_name, '') as firstName,
+                COALESCE(u.last_name, '') as lastName,
+                COALESCE(u.base_salary, 0) as baseSalary
             FROM loan_requests lr
+            LEFT JOIN users u ON lr.client_document = u.document
             WHERE lr.status IN ('PENDING_REVIEW', 'REJECTED', 'MANUAL_REVIEW')
             ORDER BY lr.created_at DESC
             LIMIT :size OFFSET :offset
@@ -111,11 +116,16 @@ public class LoanRequestRepositoryAdapter extends ReactiveAdapterOperations<
                 lr.updated_at,
                 lr.client_document,
                 COALESCE(lr.notes, '') as notes,
+                COALESCE(u.email, '') as email,
+                COALESCE(u.first_name, '') as firstName,
+                COALESCE(u.last_name, '') as lastName,
+                COALESCE(u.base_salary, 0) as baseSalary,
                 COALESCE(lr.approved_amount, 0) as approvedAmount,
                 COALESCE(lr.interest_rate, 0) as interestRate,
                 COALESCE(lr.monthly_payment, 0) as monthlyPayment,
                 COALESCE(lr.rejection_reason, '') as rejectionReason
             FROM loan_requests lr
+            LEFT JOIN users u ON lr.client_document = u.document
             WHERE lr.id = :id
             """;
             
@@ -133,14 +143,17 @@ public class LoanRequestRepositoryAdapter extends ReactiveAdapterOperations<
                 .id(row.get("id", Long.class))
                 .monto(row.get("amount", BigDecimal.class))
                 .plazo(row.get("term_in_months", Integer.class))
-                .email("") // Se obtendrá vía AuthService
-                .nombre("") // Se obtendrá vía AuthService
+                .email(row.get("email", String.class))
+                .nombre(buildFullName(
+                    row.get("firstName", String.class), 
+                    row.get("lastName", String.class)
+                ))
                 .tipoPrestamo(row.get("loan_type", String.class))
                 .tasaInteres(calculateInterestRate(row.get("loan_type", String.class)))
                 .estadoSolicitud(row.get("status", String.class))
                 .fechaCreacion(row.get("created_at", LocalDateTime.class))
                 .fechaActualizacion(row.get("updated_at", LocalDateTime.class))
-                .salarioBase(BigDecimal.ZERO) // Se obtendrá vía AuthService
+                .salarioBase(row.get("baseSalary", BigDecimal.class))
                 .deudaTotalMensualSolicitudesAprobadas(BigDecimal.ZERO) // Calculado por separado
                 .documentoCliente(row.get("client_document", String.class))
                 .notas(row.get("notes", String.class))
@@ -159,14 +172,17 @@ public class LoanRequestRepositoryAdapter extends ReactiveAdapterOperations<
                 .id(row.get("id", Long.class))
                 .monto(row.get("amount", BigDecimal.class))
                 .plazo(row.get("term_in_months", Integer.class))
-                .email("") // Se obtendrá vía AuthService
-                .nombre("") // Se obtendrá vía AuthService
+                .email(row.get("email", String.class))
+                .nombre(buildFullName(
+                    row.get("firstName", String.class), 
+                    row.get("lastName", String.class)
+                ))
                 .tipoPrestamo(row.get("loan_type", String.class))
                 .tasaInteres(row.get("interestRate", BigDecimal.class))
                 .estadoSolicitud(row.get("status", String.class))
                 .fechaCreacion(row.get("created_at", LocalDateTime.class))
                 .fechaActualizacion(row.get("updated_at", LocalDateTime.class))
-                .salarioBase(BigDecimal.ZERO) // Se obtendrá vía AuthService
+                .salarioBase(row.get("baseSalary", BigDecimal.class))
                 .deudaTotalMensualSolicitudesAprobadas(BigDecimal.ZERO) // Calculado por separado
                 .documentoCliente(row.get("client_document", String.class))
                 .notas(row.get("notes", String.class))

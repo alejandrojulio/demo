@@ -271,6 +271,7 @@ de gestión de créditos."""
         logger.error(f"Error enviando notificación de rechazo: {str(e)}")
         raise e
 
+<<<<<<< HEAD
 def send_debt_capacity_decision_notification(message: Dict[str, Any]):
     """
     Envía notificación con el resultado de la validación automática de capacidad de endeudamiento
@@ -748,6 +749,8 @@ def generate_payment_plan_html(payment_plan: list) -> str:
     
     return html
 
+=======
+>>>>>>> origin/main
 def send_email_notification(email: str, subject: str, text_body: str, html_body: str = None):
     """
     Envía una notificación por email usando SNS con soporte para texto plano y HTML

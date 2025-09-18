@@ -85,6 +85,7 @@ services:
     restart: unless-stopped
     environment:
       # Configuración de Base de Datos
+<<<<<<< HEAD
       SPRING_R2DBC_URL: r2dbc:mysql://mysql-auth:3306/auth_db
       SPRING_R2DBC_USERNAME: auth_user
       SPRING_R2DBC_PASSWORD: auth_pass
@@ -97,6 +98,7 @@ services:
       JWT_SECRET: CrediYa2025SecretKeyForJWTTokensVerySecureAndLong123456789
       JWT_EXPIRATION: 3600000
       
+<<<<<<< HEAD
       # Token para comunicación entre servicios
       INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-CrediYaInternalService2025SecureToken}
       
@@ -121,6 +123,7 @@ services:
     networks:
       - crediya-network
     depends_on:
+<<<<<<< HEAD
       mysql-auth:
         condition: service_healthy
     healthcheck:
@@ -141,6 +144,7 @@ services:
     restart: unless-stopped
     environment:
       # Configuración de Base de Datos
+<<<<<<< HEAD
       SPRING_R2DBC_URL: r2dbc:mysql://mysql-loans:3306/loans_db
       SPRING_R2DBC_USERNAME: loans_user
       SPRING_R2DBC_PASSWORD: loans_pass
@@ -156,6 +160,7 @@ services:
       CORS_ALLOWED_ORIGINS: http://localhost:4200,http://localhost:8080,http://localhost:8081
       AWS_REGION: ${AWS_REGION:-us-east-2}
       AWS_SQS_QUEUE_URL: ${AWS_SQS_QUEUE_URL:-https://sqs.us-east-2.amazonaws.com/882309621524/sqs_notificaciones}
+<<<<<<< HEAD
       AWS_SQS_DEBT_CAPACITY_QUEUE_URL: ${AWS_SQS_DEBT_CAPACITY_QUEUE_URL:-https://sqs.us-east-2.amazonaws.com/882309621524/sqs_capacidad}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
@@ -183,6 +188,7 @@ services:
     networks:
       - crediya-network
     depends_on:
+<<<<<<< HEAD
       mysql-loans:
         condition: service_healthy
       auth-service:
@@ -198,6 +204,7 @@ services:
 # VOLÚMENES PERSISTENTES
 # ========================================
 volumes:
+<<<<<<< HEAD
   # Datos de las bases de datos separadas (persistentes)
   mysql_auth_data:
     driver: local
