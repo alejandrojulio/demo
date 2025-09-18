@@ -1,3 +1,6 @@
+# ===========================================
+# CONFIGURACIÓN POR DEFECTO (LOCAL)
+# ===========================================
 server:
   port: 8080
 spring:
@@ -6,7 +9,38 @@ spring:
   devtools:
     add-properties: false
   profiles:
-    include: null
+    active: local
+  # Configuración R2DBC para desarrollo LOCAL
+  r2dbc:
+    url: r2dbc:mysql://localhost:3306/auth_db
+    username: root
+    password: 1234
+    pool:
+      enabled: true
+      initial-size: 5
+      max-size: 20
+      max-idle-time: 30m
+
+
+---
+# ===========================================
+# CONFIGURACIÓN PARA DOCKER
+# ===========================================
+spring:
+  config:
+    activate:
+      on-profile: docker
+  # Configuración R2DBC para contenedores Docker
+  r2dbc:
+    url: r2dbc:mysql://mysql-auth:3306/auth_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: root
+    password: 1234
+    pool:
+      enabled: true
+      initial-size: 5
+      max-size: 20
+      max-idle-time: 30m
+
 management:
   endpoints:
     web:
@@ -32,11 +66,3 @@ logging:
     co.com.pragma.api.config: DEBUG
     org.springframework.security: DEBUG
 
-adapters:
-  r2dbc:
-    host: localhost
-    port: 5432
-    database: crediya_db
-    schema: public
-    username: postgres
-    password: "123"

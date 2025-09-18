@@ -191,7 +191,6 @@ public final class TestDataBuilder {
 
     public static class SecurityContextBuilder {
         public static final String ADMIN_EMAIL = "admin@crediya.com";
-<<<<<<< HEAD
         public static final String ADVISOR_EMAIL = "asesor@crediya.com";
         public static final String CLIENT_EMAIL = "cliente@crediya.com";
         
@@ -216,18 +215,6 @@ public final class TestDataBuilder {
         public static final String ASESOR_DOCUMENT = ADVISOR_DOCUMENT;
         @Deprecated
         public static final String CLIENTE_DOCUMENT = CLIENT_DOCUMENT;
-=======
-        public static final String ASESOR_EMAIL = "asesor@crediya.com";
-        public static final String CLIENTE_EMAIL = "cliente@crediya.com";
-        
-        public static final String ADMIN_ROLE = "ADMINISTRADOR";
-        public static final String ASESOR_ROLE = "ASESOR";
-        public static final String CLIENTE_ROLE = "CLIENTE";
-        
-        public static final String ADMIN_DOCUMENT = "admin001";
-        public static final String ASESOR_DOCUMENT = "asesor001";
-        public static final String CLIENTE_DOCUMENT = "12345678";
->>>>>>> origin/main
     }
 
     // ==========================================

@@ -1,2 +1,3 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-co.com.pragma.r2dbc.config.R2dbcConfig
+# Configuración R2DBC personalizada deshabilitada - usando auto-configuración de Spring Boot
+# org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+# co.com.pragma.r2dbc.config.R2dbcConfig
