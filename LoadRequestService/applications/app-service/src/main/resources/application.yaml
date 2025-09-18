@@ -22,9 +22,12 @@ management:
         enabled: true
 cors:
   allowed-origins: "http://localhost:4200,http://localhost:8081"
-auth-service:
-  base-url: "http://localhost:8080"
-  timeout: 5000
+app:
+  auth-service:
+    base-url: "http://localhost:8080"
+    timeout-seconds: 5
+  internal:
+    service-token: ${INTERNAL_SERVICE_TOKEN:CrediYaInternalService2025SecureToken}
 logging:
   level:
     co.com.pragma.security: "DEBUG"
@@ -33,19 +36,17 @@ logging:
     org.springframework.web.reactive.function.client: "DEBUG"
 aws:
   region: ${AWS_REGION:us-east-2}
-  access-key-id: ${AWS_ACCESS_KEY_ID:your-access-key-here}
-  secret-access-key: ${AWS_SECRET_ACCESS_KEY:your-secret-key-here}
+  access-key-id: ${AWS_ACCESS_KEY_ID}
+  secret-access-key: ${AWS_SECRET_ACCESS_KEY}
   sqs:
+    # Cola para notificaciones de email
     loan-decisions-queue-url: ${AWS_SQS_QUEUE_URL:https://sqs.us-east-2.amazonaws.com/882309621524/sqs_notificaciones}
+    # Cola para ENVIAR requests al Lambda
+    debt-capacity-queue-url: ${AWS_SQS_DEBT_CAPACITY_QUEUE_URL:https://sqs.us-east-2.amazonaws.com/882309621524/sqs_capacidad}
+    # Cola SEPARADA para RECIBIR responses del Lambda (fallback a cola principal si no existe)
+    debt-capacity-response-queue-url: ${AWS_SQS_DEBT_CAPACITY_RESPONSE_QUEUE_URL:https://sqs.us-east-2.amazonaws.com/882309621524/sqs_capacidad_response}
+    # Timeouts más generosos para conexiones lentas
+    connection-timeout-ms: 30000
+    read-timeout-ms: 60000
     
-local:
-  aws:
-    endpoint: "http://localhost:4566"
-    sqs:
-      loan-decisions-queue-url: "http://localhost:4566/000000000000/loan-decisions-queue-dev.fifo"
-      
-adapter:
-  sqs:
-    region: "us-east-1"
-    queueUrl: "http://localhost:4566/000000000000/sample"
-    endpoint: "http://localhost:4566 # For localstack only"
+# Configuración local removida - usando AWS directo

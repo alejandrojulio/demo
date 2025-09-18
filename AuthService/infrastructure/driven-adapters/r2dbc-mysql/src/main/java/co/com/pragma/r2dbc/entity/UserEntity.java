@@ -38,7 +38,7 @@ public class UserEntity {
     @Column("base_salary")
     private BigDecimal baseSalary;
 
-    @Column("password_hash")
+    @Column("password")
     private String password;
 
     private String role;

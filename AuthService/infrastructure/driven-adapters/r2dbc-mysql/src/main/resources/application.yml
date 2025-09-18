@@ -8,9 +8,9 @@ spring:
   profiles:
     include: null
 
-  # ✅ NUEVO: Configuración R2DBC estándar de Spring Boot
+  # ✅ CONFIGURACIÓN R2DBC para AuthService - Base de datos auth_db
   r2dbc:
-    url: r2dbc:mysql://localhost:3306/crediya_db
+    url: r2dbc:mysql://localhost:3306/auth_db
     username: root
     password: "1234"
     pool:
@@ -33,10 +33,14 @@ management:
 
 cors:
   allowed-origins: "http://localhost:4200,http://localhost:8080"
+
+app:
+  internal:
+    service-token: ${INTERNAL_SERVICE_TOKEN:CrediYaInternalService2025SecureToken}
 adapters:
   r2dbc:
     host: ${MYSQL_HOST:localhost}
     port: ${MYSQL_PORT:3306}
-    database: ${MYSQL_DATABASE:crediya_db}
+    database: ${MYSQL_DATABASE:auth_db}
     username: ${MYSQL_USERNAME:root}
     password: ${MYSQL_PASSWORD:1234}

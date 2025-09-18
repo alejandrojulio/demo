@@ -1,0 +1,29 @@
+dependencies {
+    implementation project(':model')
+    implementation project(':usecase')
+    
+    // Spring Boot Starter
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springframework:spring-context'
+    
+    // AWS Spring Cloud SQS para listeners
+    implementation 'io.awspring.cloud:spring-cloud-aws-sqs:3.0.3'
+    implementation 'io.awspring.cloud:spring-cloud-aws-autoconfigure:3.0.3'
+    
+    // Jackson for JSON processing
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    
+    // Reactive streams
+    implementation 'io.projectreactor:reactor-core'
+    
+    // Spring Messaging
+    implementation 'org.springframework:spring-messaging'
+    
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    
+    // Logging
+    implementation 'org.slf4j:slf4j-api'
+}

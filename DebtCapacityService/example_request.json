@@ -1,0 +1,8 @@
+{
+  "Records": [
+    {
+      "body": "{\"event_type\": \"AUTOMATIC_DEBT_CAPACITY_VALIDATION\", \"timestamp\": \"2024-01-15T10:30:00\", \"source\": \"LoadRequestService\", \"current_loan\": {\"loan_request_id\": 1, \"amount\": 8500000, \"term_in_months\": 36, \"loan_type\": \"PERSONAL\", \"interest_rate\": 15.5}, \"client\": {\"document\": \"45678901\", \"first_name\": \"Ana\", \"last_name\": \"Pérez Silva\", \"email\": \"ana.perez@email.com\", \"base_salary\": 2800000}, \"approved_loans\": [{\"id\": 5, \"amount\": 12000000, \"term_in_months\": 48, \"loan_type\": \"VEHICLE\", \"interest_rate\": 12.8}, {\"id\": 7, \"amount\": 6000000, \"term_in_months\": 24, \"loan_type\": \"PERSONAL\", \"interest_rate\": 15.5}]}"
+    }
+  ]
+}
+

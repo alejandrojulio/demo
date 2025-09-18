@@ -8,9 +8,9 @@ spring:
   profiles:
     include: null
 
-  # ✅ NUEVO: Configuración R2DBC estándar de Spring Boot
+  # ✅ CONFIGURACIÓN R2DBC para LoadRequestService - Base de datos loans_db (LOCAL)
   r2dbc:
-    url: r2dbc:mysql://localhost:3306/crediya_db
+    url: r2dbc:mysql://localhost:3306/loans_db
     username: root
     password: "1234"
     pool:
@@ -37,6 +37,6 @@ adapters:
   r2dbc:
     host: ${MYSQL_HOST:localhost}
     port: ${MYSQL_PORT:3306}
-    database: ${MYSQL_DATABASE:crediya_db}
+    database: ${MYSQL_DATABASE:loans_db}
     username: ${MYSQL_USERNAME:root}
     password: ${MYSQL_PASSWORD:1234}

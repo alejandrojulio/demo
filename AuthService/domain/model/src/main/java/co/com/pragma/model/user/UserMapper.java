@@ -18,7 +18,7 @@ public class UserMapper {
                 .email(userDTO.getEmail())
                 .baseSalary(userDTO.getBaseSalary())
                 .password(userDTO.getPassword())
-                .role(userDTO.getRole() != null ? userDTO.getRole() : UserRole.CLIENTE)
+                .role(userDTO.getRole() != null ? userDTO.getRole() : UserRole.CLIENT)
                 .isActive(true)
                 .createdAt(java.time.LocalDateTime.now())
                 .updatedAt(java.time.LocalDateTime.now())
@@ -53,7 +53,7 @@ public class UserMapper {
                 .lastName(user.getLastName() != null ? user.getLastName().trim() : null)
                 .address(user.getAddress() != null ? user.getAddress().trim() : null)
                 .phone(user.getPhone() != null ? user.getPhone().trim() : null)
-                .role(user.getRole() != null ? user.getRole() : UserRole.CLIENTE)
+                .role(user.getRole() != null ? user.getRole() : UserRole.CLIENT)
                 .build();
     }
     
