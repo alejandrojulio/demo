@@ -75,11 +75,6 @@ USER appuser
 ENV JAVA_OPTS="-Xmx512m -Xms256m -Djava.security.egd=file:/dev/./urandom" \
     SPRING_PROFILES_ACTIVE=docker \
     SERVER_PORT=8081 \
-    MYSQL_HOST=mysql-crediya \
-    MYSQL_PORT=3306 \
-    MYSQL_DATABASE=crediya_db \
-    MYSQL_USERNAME=crediya_user \
-    MYSQL_PASSWORD=crediya_pass \
     AUTH_SERVICE_URL=http://auth-service:8080
 
 # Exponer puerto

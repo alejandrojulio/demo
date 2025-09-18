@@ -6,8 +6,6 @@ import co.com.pragma.model.loan.gateways.LoanRequestRepository;
 import co.com.pragma.r2dbc.entity.LoanRequestEntity;
 import co.com.pragma.r2dbc.helper.ReactiveAdapterOperations;
 import org.reactivecommons.utils.ObjectMapper;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
@@ -76,12 +74,11 @@ public class LoanRequestRepositoryAdapter extends ReactiveAdapterOperations<
                 lr.updated_at,
                 lr.client_document,
                 COALESCE(lr.notes, '') as notes,
-                COALESCE(u.email, '') as email,
-                COALESCE(u.first_name, '') as firstName,
-                COALESCE(u.last_name, '') as lastName,
-                COALESCE(u.base_salary, 0) as baseSalary
+                COALESCE(lr.approved_amount, 0) as approvedAmount,
+                COALESCE(lr.interest_rate, 0) as interestRate,
+                COALESCE(lr.monthly_payment, 0) as monthlyPayment,
+                COALESCE(lr.rejection_reason, '') as rejectionReason
             FROM loan_requests lr
-            LEFT JOIN users u ON lr.client_document = u.document
             WHERE lr.status IN ('PENDING_REVIEW', 'REJECTED', 'MANUAL_REVIEW')
             ORDER BY lr.created_at DESC
             LIMIT :size OFFSET :offset
@@ -94,7 +91,7 @@ public class LoanRequestRepositoryAdapter extends ReactiveAdapterOperations<
                 .sql(sql)
                 .bind("size", size)
                 .bind("offset", offset)
-                .map(this::mapRowToDTO)
+                .map(this::mapRowToBasicDTO)
                 .all();
     }
 
@@ -116,16 +113,11 @@ public class LoanRequestRepositoryAdapter extends ReactiveAdapterOperations<
                 lr.updated_at,
                 lr.client_document,
                 COALESCE(lr.notes, '') as notes,
-                COALESCE(u.email, '') as email,
-                COALESCE(u.first_name, '') as firstName,
-                COALESCE(u.last_name, '') as lastName,
-                COALESCE(u.base_salary, 0) as baseSalary,
                 COALESCE(lr.approved_amount, 0) as approvedAmount,
                 COALESCE(lr.interest_rate, 0) as interestRate,
                 COALESCE(lr.monthly_payment, 0) as monthlyPayment,
                 COALESCE(lr.rejection_reason, '') as rejectionReason
             FROM loan_requests lr
-            LEFT JOIN users u ON lr.client_document = u.document
             WHERE lr.id = :id
             """;
             
@@ -133,61 +125,35 @@ public class LoanRequestRepositoryAdapter extends ReactiveAdapterOperations<
                 .getDatabaseClient()
                 .sql(sql)
                 .bind("id", id)
-                .map(this::mapRowToCompleteDTO)
+                .map(this::mapRowToBasicDTO)
                 .one();
     }
 
 
-    private LoanRequestReviewDTO mapRowToDTO(io.r2dbc.spi.Row row, io.r2dbc.spi.RowMetadata metadata) {
+    private LoanRequestReviewDTO mapRowToBasicDTO(io.r2dbc.spi.Row row, io.r2dbc.spi.RowMetadata metadata) {
         return LoanRequestReviewDTO.builder()
                 .id(row.get("id", Long.class))
                 .monto(row.get("amount", BigDecimal.class))
                 .plazo(row.get("term_in_months", Integer.class))
-                .email(row.get("email", String.class))
-                .nombre(buildFullName(
-                    row.get("firstName", String.class), 
-                    row.get("lastName", String.class)
-                ))
+                .email("") // Se obtendrá posteriormente via AuthService
+                .nombre("") // Se obtendrá posteriormente via AuthService
                 .tipoPrestamo(row.get("loan_type", String.class))
-                .tasaInteres(calculateInterestRate(row.get("loan_type", String.class)))
+                .tasaInteres(row.get("interestRate", BigDecimal.class) != null ? 
+                    row.get("interestRate", BigDecimal.class) : 
+                    calculateInterestRate(row.get("loan_type", String.class)))
                 .estadoSolicitud(row.get("status", String.class))
                 .fechaCreacion(row.get("created_at", LocalDateTime.class))
                 .fechaActualizacion(row.get("updated_at", LocalDateTime.class))
-                .salarioBase(row.get("baseSalary", BigDecimal.class))
+                .salarioBase(BigDecimal.ZERO) // Se obtendrá posteriormente via AuthService
                 .deudaTotalMensualSolicitudesAprobadas(BigDecimal.ZERO) // Calculado por separado
                 .documentoCliente(row.get("client_document", String.class))
                 .notas(row.get("notes", String.class))
                 .build();
     }
 
-    private String buildFullName(String firstName, String lastName) {
-        if (firstName == null && lastName == null) return "";
-        if (firstName == null) return lastName;
-        if (lastName == null) return firstName;
-        return (firstName + " " + lastName).trim();
-    }
 
-    private LoanRequestReviewDTO mapRowToCompleteDTO(io.r2dbc.spi.Row row, io.r2dbc.spi.RowMetadata metadata) {
-        return LoanRequestReviewDTO.builder()
-                .id(row.get("id", Long.class))
-                .monto(row.get("amount", BigDecimal.class))
-                .plazo(row.get("term_in_months", Integer.class))
-                .email(row.get("email", String.class))
-                .nombre(buildFullName(
-                    row.get("firstName", String.class), 
-                    row.get("lastName", String.class)
-                ))
-                .tipoPrestamo(row.get("loan_type", String.class))
-                .tasaInteres(row.get("interestRate", BigDecimal.class))
-                .estadoSolicitud(row.get("status", String.class))
-                .fechaCreacion(row.get("created_at", LocalDateTime.class))
-                .fechaActualizacion(row.get("updated_at", LocalDateTime.class))
-                .salarioBase(row.get("baseSalary", BigDecimal.class))
-                .deudaTotalMensualSolicitudesAprobadas(BigDecimal.ZERO) // Calculado por separado
-                .documentoCliente(row.get("client_document", String.class))
-                .notas(row.get("notes", String.class))
-                .build();
-    }
+    // Método obsoleto - ahora se usa mapRowToBasicDTO para ambos casos
+    // Los datos del cliente se obtienen via AuthService en el caso de uso
 
     private BigDecimal calculateInterestRate(String loanType) {
         if (loanType == null) return BigDecimal.valueOf(15.0);

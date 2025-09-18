@@ -27,7 +27,7 @@ public class DebtCapacityResponseListener {
     /**
      * Procesa respuestas del DebtCapacityService en cola separada
      */
-    @SqsListener(value = "${aws.sqs.debt-capacity-response-queue-url}")
+    @SqsListener(value = "${aws.sqs.debt-capacity-response-queue-url:https://sqs.us-east-2.amazonaws.com/882309621524/sqs_capacidad_response}")
     public void processResponseMessage(String message,
                                      @Header(value = "MessageType", required = false) String messageType) {
         
