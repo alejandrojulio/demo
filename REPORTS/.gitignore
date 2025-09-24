@@ -13,7 +13,7 @@ local.properties
 .settings/
 .loadpath
 .recommenders
-
+*.yaml
 # External tool builders
 .externalToolBuilders/
 

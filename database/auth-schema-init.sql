@@ -149,16 +149,16 @@ CREATE TABLE IF NOT EXISTS auth_audit_log (
 
 -- Usuario administrador por defecto
 INSERT INTO users (email, password, first_name, last_name, document, birth_date, address, phone, base_salary, role, email_verified) VALUES
-('admin@crediya.com', '$2a$10$8P8kZpXQGzc1tKzW2Qn6WO7Lv9fB3nC5dR8jK6mE1sA4qH7uJ9pL0', 'Administrador', 'Sistema', '00000000', '1980-01-01', 'Calle Admin 123', '+573001234567', 15000000.00, 'ADMIN', TRUE),
-('asesor@crediya.com', '$2a$10$8P8kZpXQGzc1tKzW2Qn6WO7Lv9fB3nC5dR8jK6mE1sA4qH7uJ9pL0', 'Asesor', 'Préstamos', '11111111', '1985-05-15', 'Avenida Asesor 456', '+573001234568', 3500000.00, 'ADVISOR', TRUE);
+('admin@crediya.com', '$2a$10$coafGzAD5510H6iBKoVtIOeXUUBzJ9wKXdZRGH/zMCeksXQrnLg9O', 'Administrador', 'Sistema', '00000000', '1980-01-01', 'Calle Admin 123', '+573001234567', 15000000.00, 'ADMIN', TRUE),
+('asesor@crediya.com', '$2a$10$coafGzAD5510H6iBKoVtIOeXUUBzJ9wKXdZRGH/zMCeksXQrnLg9O', 'Asesor', 'Préstamos', '11111111', '1985-05-15', 'Avenida Asesor 456', '+573001234568', 3500000.00, 'ADVISOR', TRUE);
 
 -- Clientes de prueba
 INSERT INTO users (email, password, first_name, last_name, document, birth_date, address, phone, base_salary, role, email_verified) VALUES
-('ana.perez@email.com', '$2a$10$8P8kZpXQGzc1tKzW2Qn6WO7Lv9fB3nC5dR8jK6mE1sA4qH7uJ9pL0', 'Ana', 'Pérez Silva', '45678901', '1990-03-15', 'Calle 45 #12-34', '+573012345678', 2800000.00, 'CLIENT', TRUE),
-('juan.rodriguez@email.com', '$2a$10$8P8kZpXQGzc1tKzW2Qn6WO7Lv9fB3nC5dR8jK6mE1sA4qH7uJ9pL0', 'Juan', 'Rodríguez', '56789012', '1988-07-22', 'Carrera 67 #89-01', '+573012345679', 4200000.00, 'CLIENT', TRUE),
-('laura.gonzalez@email.com', '$2a$10$8P8kZpXQGzc1tKzW2Qn6WO7Lv9fB3nC5dR8jK6mE1sA4qH7uJ9pL0', 'Laura', 'González', '67890123', '1992-11-08', 'Avenida 23 #45-67', '+573012345680', 5500000.00, 'CLIENT', TRUE),
-('carlos.martinez@email.com', '$2a$10$8P8kZpXQGzc1tKzW2Qn6WO7Lv9fB3nC5dR8jK6mE1sA4qH7uJ9pL0', 'Carlos', 'Martínez', '78901234', '1987-02-14', 'Calle 78 #90-12', '+573012345681', 3200000.00, 'CLIENT', TRUE),
-('maria.lopez@email.com', '$2a$10$8P8kZpXQGzc1tKzW2Qn6WO7Lv9fB3nC5dR8jK6mE1sA4qH7uJ9pL0', 'María', 'López', '89012345', '1985-12-25', 'Carrera 34 #56-78', '+573012345682', 6800000.00, 'CLIENT', TRUE);
+('ana.perez@email.com', '$2a$10$coafGzAD5510H6iBKoVtIOeXUUBzJ9wKXdZRGH/zMCeksXQrnLg9O', 'Ana', 'Pérez Silva', '45678901', '1990-03-15', 'Calle 45 #12-34', '+573012345678', 2800000.00, 'CLIENT', TRUE),
+('juan.rodriguez@email.com', '$2a$10$coafGzAD5510H6iBKoVtIOeXUUBzJ9wKXdZRGH/zMCeksXQrnLg9O', 'Juan', 'Rodríguez', '56789012', '1988-07-22', 'Carrera 67 #89-01', '+573012345679', 4200000.00, 'CLIENT', TRUE),
+('paisadevcol@gmail.com', '$2a$10$coafGzAD5510H6iBKoVtIOeXUUBzJ9wKXdZRGH/zMCeksXQrnLg9O', 'Laura', 'González', '67890123', '1992-11-08', 'Avenida 23 #45-67', '+573012345680', 5500000.00, 'CLIENT', TRUE),
+('carlos.martinez@email.com', '$2a$10$coafGzAD5510H6iBKoVtIOeXUUBzJ9wKXdZRGH/zMCeksXQrnLg9O', 'Carlos', 'Martínez', '78901234', '1987-02-14', 'Calle 78 #90-12', '+573012345681', 3200000.00, 'CLIENT', TRUE),
+('maria.lopez@email.com', '$2a$10$coafGzAD5510H6iBKoVtIOeXUUBzJ9wKXdZRGH/zMCeksXQrnLg9O', 'María', 'López', '89012345', '1985-12-25', 'Carrera 34 #56-78', '+573012345682', 6800000.00, 'CLIENT', TRUE);
 
 -- ========================================
 -- ROLES ASIGNADOS DIRECTAMENTE EN TABLA USERS

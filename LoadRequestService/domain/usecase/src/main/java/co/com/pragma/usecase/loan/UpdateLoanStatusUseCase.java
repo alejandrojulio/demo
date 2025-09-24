@@ -5,6 +5,7 @@ import co.com.pragma.model.common.Messages;
 import co.com.pragma.model.loan.LoanRequest;
 import co.com.pragma.model.loan.gateways.LoanApplicationLogger;
 import co.com.pragma.model.loan.gateways.LoanRequestRepository;
+import co.com.pragma.usecase.loan.gateways.LoanEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
@@ -17,11 +18,14 @@ public class UpdateLoanStatusUseCase {
 
     private final LoanRequestRepository loanRequestRepository;
     private final LoanApplicationLogger logger;
+    private final LoanEventPublisher loanEventPublisher;
 
     public UpdateLoanStatusUseCase(LoanRequestRepository loanRequestRepository, 
-                                   LoanApplicationLogger logger) {
+                                   LoanApplicationLogger logger,
+                                   LoanEventPublisher loanEventPublisher) {
         this.loanRequestRepository = loanRequestRepository;
         this.logger = logger;
+        this.loanEventPublisher = loanEventPublisher;
     }
 
     @Transactional
@@ -46,13 +50,54 @@ public class UpdateLoanStatusUseCase {
                                 }
                                 
                                 // Crear la solicitud actualizada
-                                LoanRequest updatedLoan = existingLoan.toBuilder()
+                                LoanRequest.LoanRequestBuilder builder = existingLoan.toBuilder()
                                         .status(mappedStatus)
-                                        .rejectionReason(mappedStatus == LoanRequest.LoanStatus.REJECTED ? reason : null)
-                                        .updatedAt(LocalDateTime.now())
-                                        .build();
+                                        .updatedAt(LocalDateTime.now());
                                 
-                                return loanRequestRepository.update(updatedLoan);
+                                // Si es aprobación automática, completar campos de aprobación
+                                if (mappedStatus == LoanRequest.LoanStatus.APPROVED) {
+                                    builder.approvedAt(LocalDateTime.now())
+                                           .approvedBy("Sistema Automático")
+                                           .approvedAmount(existingLoan.getAmount()) // Usar el monto solicitado
+                                           .interestRate(existingLoan.getInterestRate() != null ? 
+                                                       existingLoan.getInterestRate() : 
+                                                       java.math.BigDecimal.valueOf(15.0)); // Tasa por defecto
+                                    
+                                    // Calcular cuota mensual si no existe
+                                    if (existingLoan.getMonthlyPayment() == null) {
+                                        java.math.BigDecimal monthlyPayment = calculateMonthlyPayment(
+                                            existingLoan.getAmount(),
+                                            builder.build().getInterestRate(),
+                                            existingLoan.getTermInMonths()
+                                        );
+                                        builder.monthlyPayment(monthlyPayment);
+                                    }
+                                    
+                                    if (reason != null && !reason.trim().isEmpty()) {
+                                        builder.notes(reason);
+                                    }
+                                } else if (mappedStatus == LoanRequest.LoanStatus.REJECTED) {
+                                    builder.rejectionReason(reason);
+                                }
+                                
+                                LoanRequest updatedLoan = builder.build();
+                                
+                                return loanRequestRepository.update(updatedLoan)
+                                        .flatMap(savedLoan -> {
+                                            // Si fue aprobado automáticamente, enviar evento
+                                            if (mappedStatus == LoanRequest.LoanStatus.APPROVED) {
+                                                return loanEventPublisher.publishLoanApprovedEvent(savedLoan, "AUTOMATIC")
+                                                        .doOnNext(success -> {
+                                                            if (success) {
+                                                                logger.info("✅ Evento de préstamo aprobado AUTOMÁTICAMENTE enviado para solicitud: {}", savedLoan.getId());
+                                                            } else {
+                                                                logger.warn("⚠️ No se pudo enviar evento de préstamo aprobado automático para solicitud: {}", savedLoan.getId());
+                                                            }
+                                                        })
+                                                        .thenReturn(savedLoan);
+                                            }
+                                            return Mono.just(savedLoan);
+                                        });
                             });
                 })
                 .doOnSuccess(updatedLoan -> 
@@ -114,5 +159,34 @@ public class UpdateLoanStatusUseCase {
                 logger.warn("Estado actual desconocido: {}", currentStatus);
                 return Mono.just(false);
         }
+    }
+    
+    /**
+     * Calcula la cuota mensual usando la fórmula de amortización francesa
+     */
+    private java.math.BigDecimal calculateMonthlyPayment(java.math.BigDecimal principal, 
+                                                        java.math.BigDecimal annualRate, 
+                                                        Integer termMonths) {
+        if (principal == null || annualRate == null || termMonths == null || termMonths <= 0) {
+            return java.math.BigDecimal.ZERO;
+        }
+        
+        // Tasa mensual = tasa anual / 12 / 100
+        java.math.BigDecimal monthlyRate = annualRate.divide(java.math.BigDecimal.valueOf(12), 6, java.math.RoundingMode.HALF_UP)
+                                                     .divide(java.math.BigDecimal.valueOf(100), 6, java.math.RoundingMode.HALF_UP);
+        
+        if (monthlyRate.compareTo(java.math.BigDecimal.ZERO) == 0) {
+            // Si no hay interés, solo dividir principal entre meses
+            return principal.divide(java.math.BigDecimal.valueOf(termMonths), 2, java.math.RoundingMode.HALF_UP);
+        }
+        
+        // Fórmula: M = P * (r * (1 + r)^n) / ((1 + r)^n - 1)
+        java.math.BigDecimal onePlusRate = java.math.BigDecimal.ONE.add(monthlyRate);
+        java.math.BigDecimal poweredRate = onePlusRate.pow(termMonths);
+        
+        java.math.BigDecimal numerator = principal.multiply(monthlyRate).multiply(poweredRate);
+        java.math.BigDecimal denominator = poweredRate.subtract(java.math.BigDecimal.ONE);
+        
+        return numerator.divide(denominator, 2, java.math.RoundingMode.HALF_UP);
     }
 }

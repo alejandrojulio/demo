@@ -8,6 +8,8 @@ import co.com.pragma.model.loan.gateways.LoanApplicationLogger;
 import co.com.pragma.model.loan.gateways.LoanRequestRepository;
 import co.com.pragma.model.notification.NotificationMessage;
 import co.com.pragma.model.notification.gateways.NotificationGateway;
+import co.com.pragma.model.user.UserData;
+import co.com.pragma.model.user.gateways.UserDataGateway;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
@@ -21,19 +23,38 @@ public class NotificationService {
     private final NotificationGateway notificationGateway;
     private final LoanApplicationLogger logger;
     private final LoanRequestRepository loanRequestRepository;
+    private final UserDataGateway userDataGateway;
     private final NumberFormat currencyFormat;
     
     public NotificationService(NotificationGateway notificationGateway, 
                               LoanApplicationLogger logger,
-                              LoanRequestRepository loanRequestRepository) {
+                              LoanRequestRepository loanRequestRepository,
+                              UserDataGateway userDataGateway) {
         this.notificationGateway = notificationGateway;
         this.logger = logger;
         this.loanRequestRepository = loanRequestRepository;
+        this.userDataGateway = userDataGateway;
         this.currencyFormat = NumberFormat.getCurrencyInstance(new Locale("es", "CO"));
     }
     
     public Mono<Void> sendLoanDecisionNotification(LoanRequest loanRequest, String asesorEmail) {
         return loanRequestRepository.findByIdWithClientInfo(loanRequest.getId())
+                .flatMap(loanWithClientInfo -> {
+                    // Obtener los datos completos del cliente desde AuthService
+                    return userDataGateway.getUserByDocument(loanWithClientInfo.getDocumentoCliente())
+                            .map(userData -> {
+                                // Actualizar el DTO con los datos del cliente
+                                loanWithClientInfo.setEmail(userData.getEmail());
+                                loanWithClientInfo.setNombre(userData.getFirstName() + " " + userData.getLastName());
+                                return loanWithClientInfo;
+                            })
+                            .onErrorResume(error -> {
+                                logger.error("Error obteniendo datos del cliente desde AuthService para documento " + 
+                                           loanWithClientInfo.getDocumentoCliente() + ": " + error.getMessage(), error);
+                                // Continuar con datos vacíos si no se puede obtener el cliente
+                                return Mono.just(loanWithClientInfo);
+                            });
+                })
                 .flatMap(loanWithClientInfo -> createNotificationMessage(loanRequest, loanWithClientInfo, asesorEmail))
                 .flatMap(this::sendNotificationMessage)
                 .doOnSuccess(result -> 

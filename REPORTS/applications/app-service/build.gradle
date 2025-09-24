@@ -1,12 +1,27 @@
 apply plugin: 'org.springframework.boot'
 
 dependencies {
+	testImplementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation project(':model')
     implementation project(':usecase')
-    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation project(':dynamo-db')
+    implementation project(':sqs-listener')
+    implementation project(':event-publisher')
+    implementation project(':reactive-web')
+    
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.cloud:spring-cloud-aws-messaging:2.2.6.RELEASE'
+    
+    // AWS SDK
+    implementation 'software.amazon.awssdk:dynamodb'
+    
+    // Jackson
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    
     runtimeOnly('org.springframework.boot:spring-boot-devtools')
     testImplementation 'com.tngtech.archunit:archunit:1.4.1'
-    testImplementation 'com.fasterxml.jackson.core:jackson-databind'
 }
 
 tasks.register('explodedJar', Copy) {
@@ -23,4 +38,3 @@ bootJar {
     // Sets output jar name
     archiveFileName = "${project.getParent().getName()}.${archiveExtension.get()}"
 }
-

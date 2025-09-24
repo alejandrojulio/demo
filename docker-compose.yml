@@ -173,6 +173,62 @@ services:
       retries: 3
       start_period: 90s
 
+
+
+  # ========================================
+  # MICROSERVICIO - Reportes
+  # ========================================
+  reports-service:
+    build:
+      context: ./REPORTS
+      dockerfile: Dockerfile
+    container_name: crediya-reports-service
+    restart: unless-stopped
+    environment:
+      # Configuración del Servidor
+      SERVER_PORT: 8083
+      SPRING_PROFILES_ACTIVE: docker
+      
+      # Configuración DynamoDB
+      AWS_DYNAMODB_REGION: us-east-1
+      AWS_DYNAMODB_ENDPOINT: http://dynamodb-local:8000
+      AWS_DYNAMODB_TABLE_LOAN_REPORTS: loan-reports
+      
+      # Configuración SQS
+      AWS_SQS_REGION: us-east-1
+      AWS_SQS_ENDPOINT: http://elasticmq:9324
+      AWS_SQS_QUEUE_LOAN_APPROVED: loan-approved-queue
+      
+      # Credenciales AWS (locales)
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      
+      # Logs
+      LOGGING_LEVEL_CO_COM_PRAGMA: DEBUG
+      LOGGING_LEVEL_SOFTWARE_AMAZON_AWSSDK: WARN
+      
+      # Health Check
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics
+      MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED: true
+      
+    ports:
+      - "8083:8083"
+    volumes:
+      - reports_logs:/app/logs
+    networks:
+      - crediya-network
+    depends_on:
+      dynamodb-local:
+        condition: service_healthy
+      elasticmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
 # ========================================
 # VOLÚMENES PERSISTENTES
 # ========================================
@@ -194,6 +250,10 @@ volumes:
   solicitudes_logs:
     driver: local
     name: crediya_solicitudes_logs
+    
+  reports_logs:
+    driver: local
+    name: crediya_reports_logs
 
 # ========================================
 # REDES

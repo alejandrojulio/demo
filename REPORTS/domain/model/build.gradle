@@ -1,0 +1,6 @@
+dependencies {
+    // Jackson annotations para deserialización JSON
+    implementation 'com.fasterxml.jackson.core:jackson-annotations'
+    
+    // Solo lombok y dependencias básicas para el modelo
+}

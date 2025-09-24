@@ -1,0 +1,14 @@
+dependencies {
+    implementation project(':model')
+    implementation project(':usecase')
+    
+    // AWS DynamoDB
+    implementation 'software.amazon.awssdk:dynamodb'
+    implementation 'org.springframework:spring-context'
+    
+    // Jackson para serialización
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    
+    // Logging
+    implementation 'org.slf4j:slf4j-api'
+}

@@ -4,6 +4,7 @@ import co.com.pragma.model.loan.LoanDecisionDTO;
 import co.com.pragma.model.loan.LoanRequest;
 import co.com.pragma.model.loan.LoanRequestDTO;
 import co.com.pragma.model.loan.LoanRequestReviewDTO;
+import co.com.pragma.model.user.UserData;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -258,5 +259,43 @@ public final class TestDataBuilder {
         public static final String DECISION_PROCESSED_SUCCESS = "Decisión procesada exitosamente";
         
         private TestConstants() {}
+    }
+
+    // ==========================================
+    // USER DATA BUILDERS
+    // ==========================================
+
+    public static UserData.UserDataBuilder defaultUserData() {
+        return UserData.builder()
+                .id(1L)
+                .document("12345678")
+                .email("cliente@test.com")
+                .firstName("Juan")
+                .lastName("Pérez")
+                .phone("+57-301-234-5678")
+                .baseSalary(new BigDecimal("3000000"))
+                .isActive(true)
+                .emailVerified(true)
+                .createdAt(LocalDateTime.now());
+    }
+
+    public static UserData.UserDataBuilder inactiveUserData() {
+        return defaultUserData()
+                .isActive(false);
+    }
+
+    public static UserData.UserDataBuilder unverifiedUserData() {
+        return defaultUserData()
+                .emailVerified(false);
+    }
+
+    public static UserData.UserDataBuilder highSalaryUserData() {
+        return defaultUserData()
+                .baseSalary(new BigDecimal("8000000"));
+    }
+
+    public static UserData.UserDataBuilder lowSalaryUserData() {
+        return defaultUserData()
+                .baseSalary(new BigDecimal("1000000"));
     }
 }
