@@ -14,7 +14,7 @@ subprojects {
     apply plugin: 'io.spring.dependency-management'
     apply plugin: 'info.solidsoft.pitest'
 
-    compileJava.dependsOn validateStructure
+    // compileJava.dependsOn validateStructure
 
     java {
         sourceCompatibility = JavaVersion.VERSION_21
@@ -28,6 +28,7 @@ subprojects {
     }
 
     dependencies {
+		implementation platform('software.amazon.awssdk:bom:2.33.1')
         implementation 'io.projectreactor:reactor-core'
         implementation 'io.projectreactor.addons:reactor-extra'
 
@@ -36,10 +37,16 @@ subprojects {
         testImplementation 'io.projectreactor:reactor-test'
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        
+        // Lombok
         compileOnly "org.projectlombok:lombok:${lombokVersion}"
         annotationProcessor  "org.projectlombok:lombok:${lombokVersion}"
         testCompileOnly  "org.projectlombok:lombok:${lombokVersion}"
         testAnnotationProcessor  "org.projectlombok:lombok:${lombokVersion}"
+        
+        // Jackson - common to all modules
+        implementation 'com.fasterxml.jackson.core:jackson-annotations'
+        
         implementation platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
     }
 

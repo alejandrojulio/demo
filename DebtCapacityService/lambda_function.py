@@ -183,18 +183,19 @@ class SQSStatusUpdateService(StatusUpdateService):
     
     def __init__(self):
         self.sqs = boto3.client('sqs')
-        self.status_update_queue_url = os.getenv('STATUS_UPDATE_QUEUE_URL')
+        self.status_update_queue_url = os.getenv('DEBT_CAPACITY_RESPONSE_QUEUE_URL')
         
     def update_loan_status(self, loan_id: int, status: str, reason: str) -> bool:
         """Envía actualización de estado del préstamo a través de SQS"""
         try:
             if not self.status_update_queue_url:
+                logger.error(f"DEBT_CAPACITY_RESPONSE_QUEUE_URL no configurada - no se puede enviar respuesta para solicitud {loan_id}")
                 return True
                 
             message = {
-                'event_type': 'LOAN_STATUS_UPDATE',
+                'event_type': 'DEBT_CAPACITY_RESPONSE',
                 'loan_request_id': loan_id,
-                'new_status': status,
+                'status': status,
                 'reason': reason,
                 'timestamp': datetime.now().isoformat(),
                 'source': 'DebtCapacityService'
@@ -205,6 +206,7 @@ class SQSStatusUpdateService(StatusUpdateService):
                 MessageBody=json.dumps(message)
             )
             
+            logger.info(f"Respuesta enviada exitosamente a SQS para solicitud {loan_id}: {status} - MessageId: {response.get('MessageId')}")
             return True
             
         except Exception as e:

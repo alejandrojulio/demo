@@ -36,7 +36,7 @@ public final class TestDataBuilder {
                 .phone("+57-301-234-5678")
                 .email("juan.perez@test.com")
                 .password("$2a$10$hashedPassword123")
-                .role(UserRole.CLIENTE)
+                .role(UserRole.CLIENT)
                 .isActive(true)
                 .document("12345678")
                 .baseSalary(new BigDecimal("3000000"))
@@ -50,7 +50,7 @@ public final class TestDataBuilder {
                 .firstName("Admin")
                 .lastName("Sistema")
                 .email("admin@crediya.com")
-                .role(UserRole.ADMINISTRADOR)
+                .role(UserRole.ADMIN)
                 .document("admin001")
                 .baseSalary(new BigDecimal("8000000"));
     }
@@ -61,7 +61,7 @@ public final class TestDataBuilder {
                 .firstName("María")
                 .lastName("García")
                 .email("asesor@crediya.com")
-                .role(UserRole.ASESOR)
+                .role(UserRole.ADVISOR)
                 .document("asesor001")
                 .baseSalary(new BigDecimal("5000000"));
     }
@@ -70,7 +70,7 @@ public final class TestDataBuilder {
         return defaultUser()
                 .id("cliente-123")
                 .email("cliente@crediya.com")
-                .role(UserRole.CLIENTE)
+                .role(UserRole.CLIENT)
                 .document("cliente001");
     }
 
@@ -92,7 +92,7 @@ public final class TestDataBuilder {
                 .phone("+57-302-345-6789")
                 .email("carlos.rodriguez@test.com")
                 .password("password123")
-                .role(UserRole.CLIENTE)
+                .role(UserRole.CLIENT)
                 .document("87654321")
                 .baseSalary(new BigDecimal("2500000"));
     }
@@ -141,7 +141,7 @@ public final class TestDataBuilder {
                 .token("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.token")
                 .id("test-user-123")
                 .email("juan.perez@test.com")
-                .role(UserRole.CLIENTE)
+                .role(UserRole.CLIENT)
                 .message("Authentication successful");
     }
 
@@ -156,7 +156,7 @@ public final class TestDataBuilder {
                 .valid(true)
                 .id("test-user-123")
                 .email("juan.perez@test.com")
-                .role(UserRole.CLIENTE)
+                .role(UserRole.CLIENT)
                 .document("12345678")
                 .message("Valid token");
     }
@@ -177,7 +177,7 @@ public final class TestDataBuilder {
                 .address("Calle 123 #45-67")
                 .phone("+57-301-234-5678")
                 .email("juan.perez@test.com")
-                .role(UserRole.CLIENTE)
+                    .role(UserRole.CLIENT)
                 .isActive(true)
                 .document("12345678")
                 .baseSalary(new BigDecimal("3000000"));

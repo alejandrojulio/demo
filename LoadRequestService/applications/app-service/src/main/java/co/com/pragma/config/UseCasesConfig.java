@@ -10,6 +10,7 @@ import co.com.pragma.usecase.loan.ListLoanRequestsForReviewUseCase;
 import co.com.pragma.usecase.loan.LoanRequestUseCase;
 import co.com.pragma.usecase.loan.ProcessLoanDecisionUseCase;
 import co.com.pragma.usecase.loan.UpdateLoanStatusUseCase;
+import co.com.pragma.usecase.loan.gateways.LoanEventPublisher;
 import co.com.pragma.usecase.notification.NotificationService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,22 +39,25 @@ public class UseCasesConfig {
     public NotificationService notificationService(
             NotificationGateway notificationGateway,
             LoanApplicationLogger logger,
-            LoanRequestRepository loanRequestRepository) {
-        return new NotificationService(notificationGateway, logger, loanRequestRepository);
+            LoanRequestRepository loanRequestRepository,
+            UserDataGateway userDataGateway) {
+        return new NotificationService(notificationGateway, logger, loanRequestRepository, userDataGateway);
     }
 
     @Bean
     public ProcessLoanDecisionUseCase processLoanDecisionUseCase(
             LoanRequestRepository loanRequestRepository,
             LoanApplicationLogger logger,
-            NotificationService notificationService) {
-        return new ProcessLoanDecisionUseCase(loanRequestRepository, logger, notificationService);
+            NotificationService notificationService,
+            LoanEventPublisher loanEventPublisher) {
+        return new ProcessLoanDecisionUseCase(loanRequestRepository, logger, notificationService, loanEventPublisher);
     }
 
     @Bean
     public UpdateLoanStatusUseCase updateLoanStatusUseCase(
             LoanRequestRepository loanRequestRepository,
-            LoanApplicationLogger logger) {
-        return new UpdateLoanStatusUseCase(loanRequestRepository, logger);
+            LoanApplicationLogger logger,
+            LoanEventPublisher loanEventPublisher) {
+        return new UpdateLoanStatusUseCase(loanRequestRepository, logger, loanEventPublisher);
     }
 }

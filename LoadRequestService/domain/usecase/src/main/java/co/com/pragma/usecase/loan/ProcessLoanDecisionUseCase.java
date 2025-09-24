@@ -6,6 +6,7 @@ import co.com.pragma.model.loan.LoanDecisionDTO;
 import co.com.pragma.model.loan.LoanRequest;
 import co.com.pragma.model.loan.gateways.LoanApplicationLogger;
 import co.com.pragma.model.loan.gateways.LoanRequestRepository;
+import co.com.pragma.usecase.loan.gateways.LoanEventPublisher;
 import co.com.pragma.usecase.notification.NotificationService;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
@@ -19,13 +20,16 @@ public class ProcessLoanDecisionUseCase {
     private final LoanRequestRepository loanRequestRepository;
     private final LoanApplicationLogger logger;
     private final NotificationService notificationService;
+    private final LoanEventPublisher loanEventPublisher;
 
     public ProcessLoanDecisionUseCase(LoanRequestRepository loanRequestRepository, 
                                      LoanApplicationLogger logger,
-                                     NotificationService notificationService) {
+                                     NotificationService notificationService,
+                                     LoanEventPublisher loanEventPublisher) {
         this.loanRequestRepository = loanRequestRepository;
         this.logger = logger;
         this.notificationService = notificationService;
+        this.loanEventPublisher = loanEventPublisher;
     }
 
     public Mono<LoanRequest> processDecision(LoanDecisionDTO decision) {
@@ -42,10 +46,27 @@ public class ProcessLoanDecisionUseCase {
                 .flatMap(this::findExistingRequest)
                 .flatMap(request -> this.updateRequestWithDecision(request, decision, asesorId))
                 .flatMap(loanRequestRepository::save)
-                .flatMap(savedRequest -> 
-                    notificationService.sendLoanDecisionNotification(savedRequest, decision.getAsesorEmail())
-                            .thenReturn(savedRequest)
-                )
+                .flatMap(savedRequest -> {
+                    // Enviar notificación
+                    Mono<Void> notificationMono = notificationService.sendLoanDecisionNotification(savedRequest, decision.getAsesorEmail());
+                    
+                    // Si el préstamo fue aprobado, enviar evento al microservicio de REPORTES
+                    Mono<Void> eventMono = Mono.empty();
+                    if (savedRequest.getStatus() == LoanRequest.LoanStatus.APPROVED) {
+                        eventMono = loanEventPublisher.publishLoanApprovedEvent(savedRequest)
+                                .doOnNext(success -> {
+                                    if (success) {
+                                        logger.info("✅ Evento de préstamo aprobado enviado para solicitud: {}", savedRequest.getId());
+                                    } else {
+                                        logger.warn("⚠️ No se pudo enviar evento de préstamo aprobado para solicitud: {}", savedRequest.getId());
+                                    }
+                                })
+                                .then();
+                    }
+                    
+                    // Ejecutar ambas operaciones en paralelo
+                    return Mono.when(notificationMono, eventMono).thenReturn(savedRequest);
+                })
                 .doOnSuccess(result -> 
                     logger.info(MessageFormatter.format(Messages.LOG_OPERATION_COMPLETED, 
                                "procesamiento de decisión", 

@@ -20,7 +20,7 @@ application-secrets.yaml
 *.keystore
 *.crt
 *.cert
-
+/terraform
 # Java/Spring Boot
 *.class
 *.jar

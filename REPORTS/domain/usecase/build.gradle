@@ -1,3 +1,9 @@
 dependencies {
     implementation project(':model')
+    
+    // Reactor core para casos de uso
+    implementation 'io.projectreactor:reactor-core'
+    
+    // Logging explícito para casos de uso
+    implementation 'org.slf4j:slf4j-api'
 }
